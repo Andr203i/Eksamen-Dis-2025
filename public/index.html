@@ -1,13 +1,361 @@
-<html>
+<!DOCTYPE html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Understory – Alt-i-en løsning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+    <script defer src="scripts/main.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Spring til indhold</a>
+    <header class="site-header">
+      <div class="container">
+        <a class="logo" href="#top" aria-label="Understory logo">
+          <span class="logo-mark" aria-hidden="true">⥁</span>
+          <span class="logo-text">Understory</span>
+        </a>
+        <nav class="site-nav" aria-label="Hovednavigation">
+          <button class="nav-toggle" aria-expanded="false" aria-controls="nav-list">
+            <span class="nav-toggle-bar"></span>
+          </button>
+          <ul id="nav-list" class="nav-list">
+            <li><a href="#solution">Løsningen</a></li>
+            <li><a href="#features">Funktioner</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#success">Cases</a></li>
+            <li><a href="#contact" class="link-highlight">Kontakt</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
 
-<head>
-  <title>Express</title>
-  <link rel="stylesheet" href="/stylesheets/style.css">
-</head>
+    <main id="main">
+      <section id="hero" class="section hero">
+        <div class="container grid-2">
+          <div class="hero__content">
+            <span class="eyebrow">Alt-i-en platform</span>
+            <h1>Fra strategisk indsigt til daglig drift – samlet ét sted</h1>
+            <p>
+              Understory samler data, mennesker og processer i et intuitivt økosystem, der gør det nemt at
+              planlægge, lancere og optimere projekter. Få overblik, samarbejd effektivt og lever resultater med
+              selvsikkerhed.
+            </p>
+            <div class="hero__actions">
+              <a class="btn btn--primary" href="#contact">Book en demo</a>
+              <a class="btn btn--ghost" href="#solution">Se hvordan</a>
+            </div>
+            <ul class="hero__metrics">
+              <li>
+                <span class="metric__value">+45%</span>
+                <span class="metric__label">hurtigere time-to-market</span>
+              </li>
+              <li>
+                <span class="metric__value">95%</span>
+                <span class="metric__label">kundetilfredshed</span>
+              </li>
+              <li>
+                <span class="metric__value">24/7</span>
+                <span class="metric__label">dedikeret support</span>
+              </li>
+            </ul>
+          </div>
+          <div class="hero__media">
+            <div class="hero__card">
+              <div class="card__header">
+                <span class="card__title">Projekt "Nordlys"</span>
+                <span class="card__tag">Aktiv</span>
+              </div>
+              <div class="progress">
+                <span class="progress__label">Fremskridt</span>
+                <div class="progress__bar">
+                  <span class="progress__value" style="width: 72%"></span>
+                </div>
+                <span class="progress__percent">72%</span>
+              </div>
+              <ul class="card__list">
+                <li>
+                  <span class="dot dot--green"></span>
+                  <span>Kampagneplanlægning</span>
+                  <time>Uge 18</time>
+                </li>
+                <li>
+                  <span class="dot dot--amber"></span>
+                  <span>Stakeholder godkendelse</span>
+                  <time>Uge 19</time>
+                </li>
+                <li>
+                  <span class="dot dot--purple"></span>
+                  <span>Go-live support</span>
+                  <time>Uge 21</time>
+                </li>
+              </ul>
+            </div>
+            <div class="hero__glow" aria-hidden="true"></div>
+          </div>
+        </div>
+      </section>
 
-<body>
-  <h1>Express</h1>
-  <p>Welcome to Express</p>
-</body>
+      <section id="solution" class="section section--light">
+        <div class="container">
+          <div class="section__intro">
+            <span class="eyebrow">Helhedsorienteret tilgang</span>
+            <h2>En platform, der former hele kunderejsen</h2>
+            <p>
+              Fra første idé til efterlancering holder Understory dine teams forbundet. Vores modulære værktøjer
+              dækker research, storytelling, produktion og analyse i ét samlet workspace.
+            </p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <div class="feature-icon feature-icon--analysis" aria-hidden="true"></div>
+              <h3>Strategisk planlægning</h3>
+              <p>
+                Kortlæg målgrupper, definér KPI'er og udarbejd detaljerede planlægningsspor med intelligente
+                forslag baseret på dine historiske resultater.
+              </p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon feature-icon--collaboration" aria-hidden="true"></div>
+              <h3>Indholdsproduktion</h3>
+              <p>
+                Producer kampagner og historier i realtime med fælles whiteboards, styletemplates og versionsstyring
+                på tværs af teams.
+              </p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon feature-icon--insights" aria-hidden="true"></div>
+              <h3>Distribution &amp; automation</h3>
+              <p>
+                Publicér indhold direkte til dine kanaler, orkestrér automatiserede kunderejser og mål effekten i ét
+                samlet dashboard.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
 
+      <section id="features" class="section section--split">
+        <div class="container grid-2">
+          <div class="section__media">
+            <div class="screen-mockup">
+              <div class="screen-header">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+              <div class="screen-body">
+                <div class="screen-sidebar">
+                  <p>Briefing</p>
+                  <p class="is-active">Produktion</p>
+                  <p>Analyse</p>
+                  <p>Arkiv</p>
+                </div>
+                <div class="screen-main">
+                  <h4>Content sprint</h4>
+                  <ul>
+                    <li>Planlæg og prioriter aktiviteter</li>
+                    <li>Tilføj ansvarlige og deadlines</li>
+                    <li>Automatiske statusopdateringer</li>
+                  </ul>
+                  <button class="btn btn--mini">Start sprint</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section__content">
+            <span class="eyebrow">Avanceret funktionalitet</span>
+            <h2>Designet til teams, der arbejder kreativt og data-drevet</h2>
+            <ul class="checklist">
+              <li>Automatisk synkronisering med de værktøjer, du allerede bruger.</li>
+              <li>Rollestyring og enterprise-grade sikkerhed out-of-the-box.</li>
+              <li>Live dashboards med multi-kilde rapportering og AI anbefalinger.</li>
+              <li>Indbygget kundecommunity til co-creation og feedback loops.</li>
+            </ul>
+            <div class="badge-grid">
+              <div class="badge">
+                <span class="badge__value">ISO 27001</span>
+                <span class="badge__label">Certificeret sikkerhed</span>
+              </div>
+              <div class="badge">
+                <span class="badge__value">GDPR</span>
+                <span class="badge__label">Hosting i EU</span>
+              </div>
+              <div class="badge">
+                <span class="badge__value">99,9%</span>
+                <span class="badge__label">Oppetid SLA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="services" class="section">
+        <div class="container">
+          <div class="section__intro">
+            <span class="eyebrow">Partnerskab</span>
+            <h2>Mere end software – vi følger jer hele vejen</h2>
+            <p>
+              Understorys Customer Impact Team hjælper jer med onboarding, adoption og kontinuerlig optimering.
+              Fra dataanalyse til storytelling rådgiver vi jer på hver milepæl.
+            </p>
+          </div>
+          <div class="timeline">
+            <article class="timeline__item">
+              <span class="timeline__step">01</span>
+              <div>
+                <h3>Kick-off &amp; roadmap</h3>
+                <p>Vi kortlægger jeres ambitioner, succesmål og kobler dem til en konkret plan for implementering.</p>
+              </div>
+            </article>
+            <article class="timeline__item">
+              <span class="timeline__step">02</span>
+              <div>
+                <h3>Enablement &amp; opsætning</h3>
+                <p>Workshops, governance-modeller og teknisk integration, så alle kan komme i gang fra dag ét.</p>
+              </div>
+            </article>
+            <article class="timeline__item">
+              <span class="timeline__step">03</span>
+              <div>
+                <h3>Skalering &amp; optimering</h3>
+                <p>Løbende performance reviews, eksperimenter og nye best practices, der holder jer foran kurven.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="success" class="section section--accent">
+        <div class="container">
+          <div class="section__intro section__intro--compact">
+            <span class="eyebrow">Kundehistorier</span>
+            <h2>Teams der skaber effekt med Understory</h2>
+            <p>
+              Vores kunder accelererer innovationen, skaber stærkere kunderejser og leverer mere værdi med færre
+              ressourcer.
+            </p>
+          </div>
+          <div class="testimonial-grid">
+            <figure class="testimonial">
+              <blockquote>
+                "Understory har forbundet marketing og produktudvikling på en måde, vi ikke troede var muligt. Vi ser
+                resultater fra første måned."
+              </blockquote>
+              <figcaption>
+                <span class="testimonial__name">Line Thomsen</span>
+                <span class="testimonial__role">CMO, Aurora Mobility</span>
+              </figcaption>
+            </figure>
+            <figure class="testimonial">
+              <blockquote>
+                "Den samlede platform giver os et fælles overblik, så vi kan reagere hurtigere og holde fokus på det
+                strategiske arbejde."
+              </blockquote>
+              <figcaption>
+                <span class="testimonial__name">Emil Jakobsen</span>
+                <span class="testimonial__role">Head of Strategy, Northwave</span>
+              </figcaption>
+            </figure>
+            <figure class="testimonial">
+              <blockquote>
+                "Med automatiseret rapportering sparer vi timevis hver uge, samtidig med at beslutningerne bliver mere
+                datadrevne."
+              </blockquote>
+              <figcaption>
+                <span class="testimonial__name">Sanne Birk</span>
+                <span class="testimonial__role">Operations Lead, Lumen Studio</span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="section section--cta">
+        <div class="container grid-2">
+          <div class="section__content">
+            <span class="eyebrow">Kom i gang</span>
+            <h2>Klar til at opleve Understory?</h2>
+            <p>
+              Udfyld formularen, og vores team vender tilbage inden for 24 timer med en personlig demo, der er
+              skræddersyet til jeres behov.
+            </p>
+          </div>
+          <form class="contact-form" action="#" method="post">
+            <div class="form-group">
+              <label for="name">Navn</label>
+              <input type="text" id="name" name="name" placeholder="Dit navn" required />
+            </div>
+            <div class="form-group">
+              <label for="company">Virksomhed</label>
+              <input type="text" id="company" name="company" placeholder="Virksomhedens navn" required />
+            </div>
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input type="email" id="email" name="email" placeholder="navn@virksomhed.dk" required />
+            </div>
+            <div class="form-group">
+              <label for="message">Hvad vil du gerne opnå?</label>
+              <textarea id="message" name="message" rows="3" placeholder="Fortæl os kort om jeres fokus"></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary">Book en demo</button>
+            <p class="form-disclaimer">Ved at indsende accepterer du vores <a href="#">vilkår</a> og <a href="#">privacy</a>.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer__grid">
+        <div>
+          <a class="logo" href="#top" aria-label="Understory logo">
+            <span class="logo-mark" aria-hidden="true">⥁</span>
+            <span class="logo-text">Understory</span>
+          </a>
+          <p class="footer__summary">
+            Understory hjælper moderne teams med at skabe forbindende fortællinger og optimere oplevelser på tværs
+            af hele kunderejsen.
+          </p>
+        </div>
+        <div class="footer__col">
+          <h3>Platform</h3>
+          <ul>
+            <li><a href="#solution">Oversigt</a></li>
+            <li><a href="#features">Funktioner</a></li>
+            <li><a href="#services">Onboarding</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h3>Virksomhed</h3>
+          <ul>
+            <li><a href="#success">Kundehistorier</a></li>
+            <li><a href="#contact">Kontakt</a></li>
+            <li><a href="#">Karriere</a></li>
+          </ul>
+        </div>
+        <div class="footer__col">
+          <h3>Kontakt</h3>
+          <ul>
+            <li><a href="mailto:hello@understory.io">hello@understory.io</a></li>
+            <li><a href="tel:+4589876543">+45 89 87 65 43</a></li>
+            <li><a href="#">Følg os på LinkedIn</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p>&copy; 2025 Understory. Alle rettigheder forbeholdes.</p>
+        <div class="footer__legal">
+          <a href="#">Privatliv</a>
+          <a href="#">Cookies</a>
+          <a href="#">Sikkerhed</a>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>
