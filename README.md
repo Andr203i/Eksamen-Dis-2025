@@ -1,1 +1,1 @@
-# Eksamen-DIS-2025
+# Eksamen-Dis-2025
