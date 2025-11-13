@@ -1,13 +1,17 @@
 var express = require('express');
 var router = express.Router();
+const pool = require('../db');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.send(`
-    <h1>🏗️ Svar fra Eksamen-Dis-2025</h1>
-    <p>Dette er Node/Express-serveren i <b>Frankfurt</b> (port 3000)</p>
-    <p>Klientens IP: ${req.ip}</p>
-  `);
+router.get('/', async function(req, res, next) {
+  try {
+    const [rows] = await pool.query('SELECT 1 + 1 AS result');
+    res.send('DB virker! 1 + 1 = ' + rows[0].result);
+  } catch (err) {
+    console.error('Fejl ved DB-forbindelse:', err);
+    res.status(500).send('Fejl ved forbindelse til databasen');
+  }
 });
 
 module.exports = router;
+
