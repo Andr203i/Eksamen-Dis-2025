@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const pool = require('../db'); // Importér database-poolen
+const pool = require('../Db'); // Importér database-poolen
 
 /**
  * GET /
