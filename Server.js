@@ -19,6 +19,11 @@ const { securityMiddleware, rateLimiter } = require('./middleware/security');
 const { requestLogger } = require('./middleware/logging');
 
 const app = express();
+
+// ⭐ VIGTIG: FIX TIL 502 BAD GATEWAY ⭐
+// Express skal vide at den står bag Nginx / load balancer
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 4545;
 
 // ==========================================
