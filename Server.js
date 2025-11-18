@@ -95,9 +95,17 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login', 'index.html'));
 });
 
-// Dashboard
+app.get('/login/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login', 'index.html'));
+});
+
+// Dashboard - Note: No index.html in dashboard folder, redirect to performance
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard', 'index.html'));
+    res.redirect('/performance');
+});
+
+app.get('/dashboard/', (req, res) => {
+    res.redirect('/performance');
 });
 
 // Performance page
@@ -105,8 +113,16 @@ app.get('/performance', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'performance', 'index.html'));
 });
 
+app.get('/performance/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'performance', 'index.html'));
+});
+
 // Admin page
 app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
+});
+
+app.get('/admin/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
 
@@ -128,7 +144,8 @@ app.get('/', (req, res) => {
 app.use((req, res) => {
     res.status(404).json({ 
         error: 'Endpoint not found',
-        path: req.path 
+        path: req.path,
+        message: 'The requested resource was not found on this server'
     });
 });
 
@@ -156,7 +173,7 @@ async function startServer() {
             console.log('⚠️  Server will start without database functionality\n');
         }
         
-        app.listen(PORT, () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log('='.repeat(60));
             console.log(`🚀 Understory Superhost Server Running!`);
             console.log('='.repeat(60));
@@ -165,9 +182,10 @@ async function startServer() {
             console.log(`🌐 Domain:     http://spstudio.app`);
             console.log('='.repeat(60));
             console.log(`🔐 Login:      http://spstudio.app/login`);
-            console.log(`📊 Dashboard:  http://spstudio.app/dashboard`);
-            console.log(`📈 Performance: http://spstudio.app/performance`);
+            console.log(`📊 Performance: http://spstudio.app/performance`);
+            console.log(`👤 Admin:      http://spstudio.app/admin`);
             console.log(`🏪 Storefront: http://spstudio.app/storefront/1`);
+            console.log(`❤️  Health:     http://spstudio.app/health`);
             console.log('='.repeat(60));
             console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
             console.log(`📦 Database: ${process.env.DB_DATABASE || 'Not configured'}`);
@@ -182,12 +200,12 @@ async function startServer() {
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down gracefully...');
+    console.log('\n🛑 SIGTERM received, shutting down gracefully...');
     process.exit(0);
 });
 
 process.on('SIGINT', () => {
-    console.log('SIGINT received, shutting down gracefully...');
+    console.log('\n🛑 SIGINT received, shutting down gracefully...');
     process.exit(0);
 });
 
