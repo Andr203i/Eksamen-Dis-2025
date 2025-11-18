@@ -24,7 +24,7 @@ const app = express();
 // Express skal vide at den står bag Nginx / load balancer
 app.set('trust proxy', 1);
 
-const PORT = process.env.PORT || 4545;
+const PORT = process.env.PORT || 3000;
 
 // ==========================================
 // MIDDLEWARE SETUP
