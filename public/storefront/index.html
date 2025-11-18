@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Øl Smagning hos KBHBajer | Understory</title>
+    <link rel="stylesheet" href="/storefront/storefront.css?v=3">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">Understory</div>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link">← Tilbage</a>
+                <a href="/admin" class="nav-link">🏆 Community</a>
+                <button class="btn-logout" onclick="logout()">Log ud</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            
+            <!-- Hero Image -->
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1608270586620-248524c67de9?w=1200&h=400&fit=crop" 
+                     alt="Øl Smagning" 
+                     id="experienceImage">
+            </div>
+
+            <div class="content-grid">
+                <!-- Left Column - Experience Info -->
+                <div class="experience-info">
+                    <h1 class="experience-title" id="experienceTitle">Øl Smagning hos KBHBajer</h1>
+                    
+                    <!-- Host Badge - VALUABLE HOST -->
+                    <div class="valuable-host-badge" id="valuableHostBadge" style="display: none;">
+                        <div class="badge-icon">⭐</div>
+                        <div class="badge-content">
+                            <div class="badge-title">Valuable Host</div>
+                            <div class="badge-subtitle">Certificeret af Understory</div>
+                        </div>
+                        <div class="badge-stats">
+                            <span class="badge-rating" id="badgeRating">4.9</span>
+                            <span class="badge-reviews" id="badgeReviews">(45 anmeldelser)</span>
+                        </div>
+                    </div>
+
+                    <div class="experience-details">
+                        <div class="detail-item">
+                            <span class="icon">📍</span>
+                            <span id="hostLocation">Rådhuspladsen 1, 1553 København</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="icon">🗣️</span>
+                            <span>Dansk</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="icon">⏱️</span>
+                            <span>1 time</span>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Hvad er inkluderet?</h2>
+                        <p class="section-text" id="experienceIncludes">Bajer</p>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Praktisk information</h2>
+                        <p class="section-text">Man skal gå hjem fuld</p>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Om værten</h2>
+                        <div class="host-info">
+                            <div class="host-avatar" id="hostAvatar">KB</div>
+                            <div>
+                                <div class="host-name" id="hostName">Loading...</div>
+                                <div class="host-badge-text" id="hostBadgeText" style="display: none;">
+                                    ⭐ Valuable Host certificeret
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Booking Card -->
+                <div class="booking-sidebar">
+                    <div class="booking-card">
+                        <div class="price-section">
+                            <span class="price-label">Fra</span>
+                            <span class="price" id="experiencePrice">200 kr.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="persons">Personer</label>
+                            <select id="persons" class="form-select">
+                                <option value="1">1 person</option>
+                                <option value="2">2 personer</option>
+                                <option value="3">3 personer</option>
+                                <option value="4">4 personer</option>
+                                <option value="5">5+ personer</option>
+                            </select>
+                        </div>
+
+                        <div class="availability-notice">
+                            <h3>Prøv igen senere</h3>
+                            <p>Vi er desværre ikke helt klar til at modtage bookinger endnu, men vi arbejder på sagen</p>
+                        </div>
+
+                        <button class="btn btn-primary" disabled>Køb som gave</button>
+                        <button class="btn btn-secondary" disabled>Book nu</button>
+
+                        <p class="form-footer">
+                            Ingen passende datoer? <a href="#">Få besked</a>
+                        </p>
+
+                        <div class="understory-badge">
+                            <span>Sikker booking med Understory</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Understory. Powered by Understory Platform.</p>
+        </div>
+    </footer>
+
+    <script src="/storefront/storefront.js"></script>
+</body>
+</html>

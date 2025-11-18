@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance - Understory Superhost</title>
+    <link rel="stylesheet" href="/performance/performance.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">Understory</div>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link">← Tilbage</a>
+                <a href="/admin" class="nav-link">🏆 Community</a>
+                <button class="btn-logout" onclick="logout()">Log ud</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            
+            <!-- Title Section -->
+            <div class="title-section">
+                <h1 id="pageTitle">Performance</h1>
+                <p id="pageSubtitle">Se dine kundetilfredsheds-data</p>
+            </div>
+
+            <!-- Store Selector (Admin only) -->
+            <div id="adminStoreSelect" class="store-selector" style="display: none;">
+                <label for="storeSelect">Vælg butik:</label>
+                <select id="storeSelect" class="store-select" onchange="loadPerformanceData()">
+                    <option value="1">KBHBajer</option>
+                    <option value="2">Copenhagen Wine Tours</option>
+                    <option value="3">Nordic Food Experience</option>
+                    <option value="4">Danish Design Workshop</option>
+                    <option value="5">Viking History Tours</option>
+                </select>
+            </div>
+
+            <!-- Performance Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-value" id="avgRating">-</div>
+                    <div class="stat-label">Gennemsnit (90 dage)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="reviewCount">-</div>
+                    <div class="stat-label">Anmeldelser</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" id="badgeIcon">-</div>
+                    <div class="stat-value" id="badgeStatus">-</div>
+                    <div class="stat-label">Badge Status</div>
+                </div>
+                <div class="stat-card" id="rankCard" style="display: none;">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value" id="rankValue">-</div>
+                    <div class="stat-label">Placering på rangliste</div>
+                </div>
+            </div>
+
+            <!-- Ratings Table -->
+            <div class="table-section">
+                <h2>Kundetilfredsheds-svar</h2>
+                <div class="table-container">
+                    <table class="ratings-table">
+                        <thead>
+                            <tr>
+                                <th>Dato</th>
+                                <th>Rating</th>
+                                <th>Kommentar</th>
+                                <th>Kunde</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ratingsTableBody">
+                            <tr>
+                                <td colspan="4" class="loading-row">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SMS Send Form (Admin only) -->
+            <div id="adminSmsForm" class="sms-section" style="display: none;">
+                <h2>Send SMS Evaluering</h2>
+                <div class="sms-form-card">
+                    <form id="smsForm" class="sms-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="smsStoreSelect">Butik:</label>
+                                <select id="smsStoreSelect" required>
+                                    <option value="1">KBHBajer</option>
+                                    <option value="2">Copenhagen Wine Tours</option>
+                                    <option value="3">Nordic Food Experience</option>
+                                    <option value="4">Danish Design Workshop</option>
+                                    <option value="5">Viking History Tours</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="eventSelect">Begivenhed:</label>
+                                <select id="eventSelect" required>
+                                    <option value="">Indlæser...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="phoneNumbers">Telefonnumre (valgfrit - hvis tom, bruges tilmeldte):</label>
+                            <textarea id="phoneNumbers" rows="3" placeholder="+4512345678&#10;+4587654321"></textarea>
+                            <small>Et nummer per linje, start med landekode (f.eks. +45)</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send SMS</button>
+                    </form>
+                    <div id="smsResult" class="result-message"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/performance/performance.js"></script>
+</body>
+</html>
