@@ -9,7 +9,7 @@ const path = require('path');
 // Import database
 const { getPool } = require('./config/database');
 
-// Import routes (will create these next)
+// Import routes
 const adminRoutes = require('./routes/admin');
 const publicRoutes = require('./routes/public');
 const twilioWebhookRoutes = require('./routes/twilio-webhook');
@@ -32,68 +32,92 @@ const PORT = process.env.PORT || 4545;
 
 // Security headers
 app.use(helmet({
-    contentSecurityPolicy: false, // Disable for development
+    contentSecurityPolicy: false,
 }));
 
 // CORS configuration
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-        ? [`http://${process.env.DROPLET_IP}`, process.env.BASE_URL]
+        ? [
+            'http://spstudio.app',
+            'https://spstudio.app',
+            'http://www.spstudio.app',
+            'https://www.spstudio.app',
+            `http://${process.env.DROPLET_IP}:${PORT}`,
+            process.env.BASE_URL
+        ]
         : '*',
     credentials: true
 }));
 
 // Request logging
-app.use(morgan('dev')); // Console logging
-app.use(requestLogger); // Custom Winston logging
+app.use(morgan('dev'));
+app.use(requestLogger);
 
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Cookie parser for session management
+// Cookie parser
 app.use(cookieParser(process.env.SESSION_SECRET));
 
-// Rate limiting for Twilio webhook (prevent spam)
+// Rate limiting for Twilio webhook
 app.use('/api/twilio', rateLimiter);
 
-// Static files (CSS, JS, images)
+// Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
 // ROUTES
 // ==========================================
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'OK', 
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development'
     });
 });
 
-// Admin routes (performance dashboard, send SMS)
+// API routes
 app.use('/api/admin', adminRoutes);
-
-// Public API routes (host storefront data)
 app.use('/api/public', publicRoutes);
-
-// Twilio webhook routes
 app.use('/api/twilio', twilioWebhookRoutes);
 
-// Serve frontend pages
+// ==========================================
+// FRONTEND ROUTES
+// ==========================================
+
+// Login page
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login', 'index.html'));
+});
+
+// Dashboard
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard', 'index.html'));
+});
+
+// Performance page
+app.get('/performance', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'performance', 'index.html'));
+});
+
+// Admin page
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
 
+// Storefront (public-facing)
 app.get('/storefront/:hostId', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'storefront', 'index.html'));
 });
 
-// Root redirect
+// Root redirect to login
 app.get('/', (req, res) => {
-    res.redirect('/admin');
+    res.redirect('/login');
 });
 
 // ==========================================
@@ -111,7 +135,6 @@ app.use((req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
     console.error('Error:', err.stack);
-    
     res.status(err.status || 500).json({
         error: err.message || 'Internal server error',
         ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
@@ -124,7 +147,6 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
     try {
-        // Test database connection
         console.log('🔄 Testing database connection...');
         try {
             await getPool();
@@ -134,20 +156,22 @@ async function startServer() {
             console.log('⚠️  Server will start without database functionality\n');
         }
         
-        // Start Express server
         app.listen(PORT, () => {
-            console.log('='.repeat(50));
+            console.log('='.repeat(60));
             console.log(`🚀 Understory Superhost Server Running!`);
-            console.log('='.repeat(50));
-            console.log(`📍 Local:    http://localhost:${PORT}`);
-            console.log(`📍 Network:  http://${process.env.DROPLET_IP || 'your-ip'}:${PORT}`);
-            console.log(`📊 Admin:    http://localhost:${PORT}/admin`);
-            console.log(`🏪 Storefront: http://localhost:${PORT}/storefront/1`);
-            console.log(`🔗 API Docs: http://localhost:${PORT}/health`);
-            console.log('='.repeat(50));
+            console.log('='.repeat(60));
+            console.log(`📍 Local:      http://localhost:${PORT}`);
+            console.log(`📍 Network:    http://${process.env.DROPLET_IP}:${PORT}`);
+            console.log(`🌐 Domain:     http://spstudio.app`);
+            console.log('='.repeat(60));
+            console.log(`🔐 Login:      http://spstudio.app/login`);
+            console.log(`📊 Dashboard:  http://spstudio.app/dashboard`);
+            console.log(`📈 Performance: http://spstudio.app/performance`);
+            console.log(`🏪 Storefront: http://spstudio.app/storefront/1`);
+            console.log('='.repeat(60));
             console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
             console.log(`📦 Database: ${process.env.DB_DATABASE || 'Not configured'}`);
-            console.log('='.repeat(50) + '\n');
+            console.log('='.repeat(60) + '\n');
         });
         
     } catch (error) {
