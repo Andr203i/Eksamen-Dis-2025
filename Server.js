@@ -13,6 +13,7 @@ const { getPool } = require('./config/database');
 const adminRoutes = require('./routes/admin');
 const publicRoutes = require('./routes/public');
 const twilioWebhookRoutes = require('./routes/twilio-webhook');
+const authRoutes = require('./routes/auth'); 
 
 // Import middleware
 const { securityMiddleware, rateLimiter } = require('./middleware/security');
@@ -85,6 +86,7 @@ app.get('/health', (req, res) => {
 app.use('/api/admin', adminRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/twilio', twilioWebhookRoutes);
+app.use('/api/auth', authRoutes.router);  
 
 // ==========================================
 // FRONTEND ROUTES

@@ -4,54 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Understory Superhost</title>
-    <link rel="stylesheet" href="/login/login.css">
+    <link rel="stylesheet" href="login.css">
 </head>
 <body>
     <div class="login-container">
         <div class="login-card">
-            <div class="logo">Understory</div>
-            <h1>Valuable Host System</h1>
-            <p class="subtitle">Vælg din brugertype for at fortsætte</p>
-
-            <div class="login-options">
-                <!-- Admin Login -->
-                <div class="login-option" onclick="loginAsAdmin()">
-                    <div class="option-icon">👨‍💼</div>
-                    <h2>Admin</h2>
-                    <p>Fuld adgang til alle butikker og performance data</p>
-                    <button class="btn btn-admin">Log ind som Admin</button>
+            <div class="logo">UNDERSTORY</div>
+            <h1>Velkommen tilbage</h1>
+            <p class="subtitle">Log ind for at se din performance og badge status</p>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="din@email.dk" 
+                        required
+                        autocomplete="email"
+                    >
                 </div>
-
-                <!-- Host Login -->
-                <div class="login-option" onclick="showHostSelect()">
-                    <div class="option-icon">⭐</div>
-                    <h2>Vært</h2>
-                    <p>Adgang til din egen butik og performance</p>
-                    <button class="btn btn-host">Log ind som Vært</button>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="••••" 
+                        required
+                        autocomplete="current-password"
+                        maxlength="4"
+                    >
                 </div>
-            </div>
-
-            <!-- Host Selection Modal (hidden by default) -->
-            <div id="hostSelectModal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <h3>Vælg din butik</h3>
-                    <select id="hostSelect" class="host-select">
-                        <option value="">-- Vælg butik --</option>
-                        <option value="1">KBHBajer</option>
-                        <option value="2">Copenhagen Wine Tours</option>
-                        <option value="3">Nordic Food Experience</option>
-                        <option value="4">Danish Design Workshop</option>
-                        <option value="5">Viking History Tours</option>
-                    </select>
-                    <div class="modal-actions">
-                        <button class="btn btn-secondary" onclick="closeHostSelect()">Annuller</button>
-                        <button class="btn btn-primary" onclick="loginAsHost()">Fortsæt</button>
+                
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    Log ind
+                </button>
+            </form>
+            
+            <div class="demo-accounts">
+                <p class="demo-title">Demo accounts:</p>
+                <div class="demo-list">
+                    <div class="demo-item">
+                        <strong>Admin:</strong> admin@understory.com / 1234
+                    </div>
+                    <div class="demo-item">
+                        <strong>Host:</strong> info@kbhbajer.dk / 1234
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="/login/login.js"></script>
+    
+    <script src="login.js"></script>
 </body>
 </html>

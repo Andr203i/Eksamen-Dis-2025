@@ -1,75 +1,84 @@
-// Login logic with cookie-based authentication
+// Login logic with JWT authentication
 
 /**
- * Set cookie helper function
+ * Login form handler
  */
-function setCookie(name, value, days = 7) {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-}
-
-/**
- * Login as Admin
- */
-function loginAsAdmin() {
-    console.log('🔐 Logging in as Admin...');
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
     
-    // Set admin cookies
-    setCookie('user_role', 'admin');
-    setCookie('admin_session', 'true');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const errorDiv = document.getElementById('errorMessage');
+    const loginBtn = document.getElementById('loginBtn');
     
-    // Redirect to dashboard
-    window.location.href = '/dashboard';
-}
-
-/**
- * Show host selection modal
- */
-function showHostSelect() {
-    document.getElementById('hostSelectModal').style.display = 'flex';
-}
-
-/**
- * Close host selection modal
- */
-function closeHostSelect() {
-    document.getElementById('hostSelectModal').style.display = 'none';
-}
-
-/**
- * Login as Host
- */
-function loginAsHost() {
-    const hostId = document.getElementById('hostSelect').value;
+    // Clear previous errors
+    errorDiv.style.display = 'none';
     
-    if (!hostId) {
-        alert('Vælg venligst en butik');
-        return;
+    // Disable button during login
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Logger ind...';
+    
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('✅ Login successful:', data.user.name);
+            
+            // Redirect based on role
+            if (data.user.role === 'admin') {
+                window.location.href = '/admin';
+            } else if (data.user.role === 'host') {
+                window.location.href = '/dashboard';
+            }
+        } else {
+            // Show error
+            errorDiv.textContent = data.error || 'Login fejlede';
+            errorDiv.style.display = 'block';
+            
+            // Re-enable button
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Log ind';
+        }
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = 'Der skete en fejl - prøv igen';
+        errorDiv.style.display = 'block';
+        
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Log ind';
     }
-    
-    console.log(`🔐 Logging in as Host (ID: ${hostId})...`);
-    
-    // Set host cookies
-    setCookie('user_role', 'host');
-    setCookie('host_id', hostId);
-    setCookie('host_session', 'true');
-    
-    // Redirect to dashboard
-    window.location.href = '/dashboard';
-}
+});
 
 /**
  * Check if already logged in
  */
-function checkExistingLogin() {
-    const cookies = document.cookie.split(';');
-    const hasAdminSession = cookies.some(c => c.trim().startsWith('admin_session='));
-    const hasHostSession = cookies.some(c => c.trim().startsWith('host_session='));
-    
-    if (hasAdminSession || hasHostSession) {
-        console.log('✅ Already logged in, redirecting to dashboard...');
-        window.location.href = '/dashboard';
+async function checkExistingLogin() {
+    try {
+        const response = await fetch('/api/auth/me');
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('✅ Already logged in, redirecting...');
+            
+            // Redirect based on role
+            if (data.user.role === 'admin') {
+                window.location.href = '/admin';
+            } else if (data.user.role === 'host') {
+                window.location.href = '/dashboard';
+            }
+        }
+    } catch (error) {
+        // Not logged in, stay on login page
+        console.log('Not logged in');
     }
 }
 
