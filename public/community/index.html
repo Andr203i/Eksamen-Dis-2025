@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valuable Host Community - Understory</title>
+    <link rel="stylesheet" href="/community/community.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">UNDERSTORY</div>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-link" id="backLink">Tilbage</a>
+                <button class="btn-logout" onclick="logout()">Log ud</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Valuable Host Community</h1>
+                <p>Vores bedste oplevelsesværter certificeret af kundens vurderinger</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalHosts">-</div>
+                    <div class="stat-label">Værter i alt</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-value" id="valuableHosts">-</div>
+                    <div class="stat-label">Valuable Hosts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalReviews">-</div>
+                    <div class="stat-label">Evalueringer (90 dage)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgRating">-</div>
+                    <div class="stat-label">Gennemsnitlig rating</div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Section -->
+            <div class="leaderboard-section">
+                <h2>Top 40 Valuable Hosts</h2>
+                <p class="section-subtitle">Baseret på gennemsnitlig kundevurdering og antal anmeldelser de seneste 90 dage</p>
+                
+                <div class="leaderboard-table" id="leaderboardTable">
+                    <div class="loading">Indlæser...</div>
+                </div>
+            </div>
+
+            <!-- Testimonials Section -->
+            <div class="testimonials-section">
+                <h2>Historier fra vores værter</h2>
+                
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"The feature in Understory's strict really well done. Super nice, swift easy to get an open new document on their website. Great. Thanks, find a bookings traveled there, and it's never even fit at a great experience!"</p>
+                        <div class="testimonial-author">
+                            <strong>Valuable Host</strong>
+                            <span>Hans H.</span>
+                        </div>
+                        <div class="testimonial-badge">Trustpilot</div>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"User-friendly and beautifully designed. Very easy and quick to get tanger tickets. These ticket platforms can be so complicated and annoying. Thanks, find a fix!"</p>
+                        <div class="testimonial-author">
+                            <strong>Wonderful Local</strong>
+                            <span>Tine W.</span>
+                        </div>
+                        <div class="testimonial-badge">Trustpilot</div>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"It's easy to to spend time creating amazing weekday experiences for guests from sailing and travelling. The design and the whole experience is smooth. I'm looking the collaboration so far. I'm looking our new development phase!"</p>
+                        <div class="testimonial-author">
+                            <strong>CanClimb</strong>
+                            <span>Jacob S. - KrakkerExperience.dk</span>
+                        </div>
+                        <div class="testimonial-badge">Trustpilot</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/community/community.js"></script>
+</body>
+</html>

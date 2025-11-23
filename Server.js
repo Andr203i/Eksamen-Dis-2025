@@ -13,7 +13,7 @@ const { getPool } = require('./config/database');
 const adminRoutes = require('./routes/admin');
 const publicRoutes = require('./routes/public');
 const twilioWebhookRoutes = require('./routes/twilio-webhook');
-const authRoutes = require('./routes/auth'); 
+const authRoutes = require('./routes/auth');
 
 // Import middleware
 const { securityMiddleware, rateLimiter } = require('./middleware/security');
@@ -86,7 +86,7 @@ app.get('/health', (req, res) => {
 app.use('/api/admin', adminRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/twilio', twilioWebhookRoutes);
-app.use('/api/auth', authRoutes.router);  
+app.use('/api/auth', authRoutes.router);
 
 // ==========================================
 // FRONTEND ROUTES
@@ -101,13 +101,13 @@ app.get('/login/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login', 'index.html'));
 });
 
-// Dashboard - Note: No index.html in dashboard folder, redirect to performance
+// Dashboard - Host only
 app.get('/dashboard', (req, res) => {
-    res.redirect('/performance');
+    res.sendFile(path.join(__dirname, 'public', 'dashboard', 'index.html'));
 });
 
 app.get('/dashboard/', (req, res) => {
-    res.redirect('/performance');
+    res.sendFile(path.join(__dirname, 'public', 'dashboard', 'index.html'));
 });
 
 // Performance page
@@ -126,6 +126,15 @@ app.get('/admin', (req, res) => {
 
 app.get('/admin/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
+});
+
+// Community/Leaderboard page
+app.get('/community', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'community', 'index.html'));
+});
+
+app.get('/community/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'community', 'index.html'));
 });
 
 // Storefront (public-facing)
@@ -166,48 +175,50 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
     try {
-        console.log('🔄 Testing database connection...');
+        console.log('Testing database connection...');
         try {
             await getPool();
-            console.log('✅ Database connected successfully!\n');
+            console.log('Database connected successfully!\n');
         } catch (dbError) {
-            console.log('⚠️  Database connection failed:', dbError.message);
-            console.log('⚠️  Server will start without database functionality\n');
+            console.log('Database connection failed:', dbError.message);
+            console.log('Server will start without database functionality\n');
         }
         
         app.listen(PORT, '0.0.0.0', () => {
             console.log('='.repeat(60));
-            console.log(`🚀 Understory Superhost Server Running!`);
+            console.log(`Understory Superhost Server Running!`);
             console.log('='.repeat(60));
-            console.log(`📍 Local:      http://localhost:${PORT}`);
-            console.log(`📍 Network:    http://${process.env.DROPLET_IP}:${PORT}`);
-            console.log(`🌐 Domain:     http://spstudio.app`);
+            console.log(`Local:      http://localhost:${PORT}`);
+            console.log(`Network:    http://${process.env.DROPLET_IP}:${PORT}`);
+            console.log(`Domain:     http://spstudio.app`);
             console.log('='.repeat(60));
-            console.log(`🔐 Login:      http://spstudio.app/login`);
-            console.log(`📊 Performance: http://spstudio.app/performance`);
-            console.log(`👤 Admin:      http://spstudio.app/admin`);
-            console.log(`🏪 Storefront: http://spstudio.app/storefront/1`);
-            console.log(`❤️  Health:     http://spstudio.app/health`);
+            console.log(`Login:      http://spstudio.app/login`);
+            console.log(`Dashboard:  http://spstudio.app/dashboard`);
+            console.log(`Performance: http://spstudio.app/performance`);
+            console.log(`Community:  http://spstudio.app/community`);
+            console.log(`Admin:      http://spstudio.app/admin`);
+            console.log(`Storefront: http://spstudio.app/storefront/1`);
+            console.log(`Health:     http://spstudio.app/health`);
             console.log('='.repeat(60));
-            console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`📦 Database: ${process.env.DB_DATABASE || 'Not configured'}`);
+            console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+            console.log(`Database: ${process.env.DB_DATABASE || 'Not configured'}`);
             console.log('='.repeat(60) + '\n');
         });
         
     } catch (error) {
-        console.error('❌ Failed to start server:', error.message);
+        console.error('Failed to start server:', error.message);
         process.exit(1);
     }
 }
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('\n🛑 SIGTERM received, shutting down gracefully...');
+    console.log('\nSIGTERM received, shutting down gracefully...');
     process.exit(0);
 });
 
 process.on('SIGINT', () => {
-    console.log('\n🛑 SIGINT received, shutting down gracefully...');
+    console.log('\nSIGINT received, shutting down gracefully...');
     process.exit(0);
 });
 

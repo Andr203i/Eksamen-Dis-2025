@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Understory Superhost</title>
+    <title>Dashboard - Understory</title>
     <link rel="stylesheet" href="/dashboard/dashboard.css">
 </head>
 <body>
@@ -12,6 +12,7 @@
         <div class="container">
             <div class="logo">UNDERSTORY</div>
             <nav class="nav">
+                <a href="/community" class="nav-link">Community</a>
                 <button class="btn-logout" onclick="logout()">Log ud</button>
             </nav>
         </div>
@@ -27,27 +28,19 @@
                 <p id="welcomeSubtitle">Vælg hvad du vil se</p>
             </div>
 
-            <!-- 2-Column Layout -->
+            <!-- 2-Column Grid -->
             <div class="dashboard-grid">
                 
-                <!-- Storefront Card -->
-                <div class="dashboard-card" id="storefrontCard">
-                    <div class="card-number">1</div>
-                    <h2>Min Shopfront</h2>
-                    <p id="storefrontDesc">Se din butiks offentlige side</p>
-                    <button class="btn btn-primary" onclick="goToStorefront()">
-                        Åbn Shopfront
-                    </button>
+                <!-- Performance Box -->
+                <div class="dashboard-card" onclick="goToPerformance()">
+                    <h2>PERFORMANCE</h2>
+                    <p>Se dine ratings og badge status</p>
                 </div>
 
-                <!-- Performance Card -->
-                <div class="dashboard-card" id="performanceCard">
-                    <div class="card-number">2</div>
-                    <h2>Performance</h2>
-                    <p id="performanceDesc">Se dine ratings og kommentarer</p>
-                    <button class="btn btn-accent" onclick="goToPerformance()">
-                        Åbn Performance
-                    </button>
+                <!-- Shopfront Box -->
+                <div class="dashboard-card" onclick="goToStorefront()">
+                    <h2>SHOP FRONT</h2>
+                    <p>Se din offentlige butikside</p>
                 </div>
 
             </div>

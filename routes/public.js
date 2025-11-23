@@ -15,7 +15,7 @@ router.get('/host/:hostId', async (req, res) => {
         const hostQuery = `
             SELECT 
                 h.host_id,
-                h.host_name,
+                h.name as host_name,
                 h.email,
                 h.phone,
                 v.reviews_count_90d,
@@ -60,11 +60,13 @@ router.get('/host/:hostId', async (req, res) => {
                 name: host.host_name,
                 email: host.email,
                 phone: host.phone,
-                badge: {
-                    hasValuableHostBadge: host.has_valuable_host_badge === 1,
-                    avgRating90d: parseFloat(host.avg_rating_90d) || 0,
-                    reviewsCount90d: host.reviews_count_90d || 0
-                },
+                experience_name: 'Øl Smagning hos KBHBajer', // Placeholder
+                location: 'Rådhuspladsen 1, 1553 København', // Placeholder
+                description: 'Bajer', // Placeholder
+                price: 200, // Placeholder
+                has_valuable_host_badge: host.has_valuable_host_badge === 1,
+                avg_rating_90d: parseFloat(host.avg_rating_90d) || 0,
+                reviews_count_90d: host.reviews_count_90d || 0,
                 experiences: experiencesResult.recordset || []
             }
         };
@@ -132,6 +134,72 @@ router.get('/badge-criteria', (req, res) => {
             description: 'Hosts must maintain an average rating of 4.8 or higher with at least 10 reviews in the last 90 days to earn the Valuable Host badge.'
         }
     });
+});
+
+/**
+ * GET /api/public/community-stats
+ * Get community overview statistics (public)
+ */
+router.get('/community-stats', async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                (SELECT COUNT(*) FROM hosts) AS total_hosts,
+                (SELECT COUNT(*) FROM vw_host_badge_status WHERE has_valuable_host_badge = 1) AS valuable_hosts,
+                (SELECT COUNT(*) FROM evaluations WHERE created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)) AS total_reviews,
+                (SELECT COALESCE(AVG(rating), 0) FROM evaluations WHERE created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)) AS avg_rating
+        `;
+        
+        const result = await executeQuery(query);
+        
+        res.json({
+            success: true,
+            stats: result.recordset[0]
+        });
+        
+    } catch (error) {
+        logger.error('Error fetching community stats:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/public/leaderboard
+ * Get top 40 leaderboard (public)
+ */
+router.get('/leaderboard', async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                h.host_id,
+                h.name,
+                v.reviews_count_90d,
+                v.avg_rating_90d,
+                v.has_valuable_host_badge
+            FROM hosts h
+            LEFT JOIN vw_host_badge_status v ON h.host_id = v.host_id
+            WHERE v.reviews_count_90d > 0
+            ORDER BY v.avg_rating_90d DESC, v.reviews_count_90d DESC
+            LIMIT 40
+        `;
+        
+        const result = await executeQuery(query);
+        
+        res.json({
+            success: true,
+            leaderboard: result.recordset
+        });
+        
+    } catch (error) {
+        logger.error('Error fetching leaderboard:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;
