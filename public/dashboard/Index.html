@@ -10,10 +10,8 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="logo">Understory</div>
+            <div class="logo">UNDERSTORY</div>
             <nav class="nav">
-                <a href="/dashboard" class="nav-link">← Tilbage</a>
-                <a href="/admin" class="nav-link">🏆 Community</a>
                 <button class="btn-logout" onclick="logout()">Log ud</button>
             </nav>
         </div>
@@ -29,36 +27,24 @@
                 <p id="welcomeSubtitle">Vælg hvad du vil se</p>
             </div>
 
-            <!-- Admin: Store Selection (only for admin) -->
-            <div id="adminStoreSelect" class="store-selector" style="display: none;">
-                <label for="storeSelect">Vælg butik til Storefront:</label>
-                <select id="storeSelect" class="store-select">
-                    <option value="1">KBHBajer</option>
-                    <option value="2">Copenhagen Wine Tours</option>
-                    <option value="3">Nordic Food Experience</option>
-                    <option value="4">Danish Design Workshop</option>
-                    <option value="5">Viking History Tours</option>
-                </select>
-            </div>
-
             <!-- 2-Column Layout -->
             <div class="dashboard-grid">
                 
                 <!-- Storefront Card -->
                 <div class="dashboard-card" id="storefrontCard">
-                    <div class="card-icon">🏪</div>
-                    <h2>Storefront</h2>
-                    <p id="storefrontDesc">Se din butiks offentlige side med Valuable Host badge</p>
+                    <div class="card-number">1</div>
+                    <h2>Min Shopfront</h2>
+                    <p id="storefrontDesc">Se din butiks offentlige side</p>
                     <button class="btn btn-primary" onclick="goToStorefront()">
-                        Åbn Storefront
+                        Åbn Shopfront
                     </button>
                 </div>
 
                 <!-- Performance Card -->
                 <div class="dashboard-card" id="performanceCard">
-                    <div class="card-icon">📊</div>
+                    <div class="card-number">2</div>
                     <h2>Performance</h2>
-                    <p id="performanceDesc">Se dine ratings, kommentarer og badge status</p>
+                    <p id="performanceDesc">Se dine ratings og kommentarer</p>
                     <button class="btn btn-accent" onclick="goToPerformance()">
                         Åbn Performance
                     </button>

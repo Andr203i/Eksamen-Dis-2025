@@ -3,187 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community - Valuable Host Leaderboard | Understory</title>
+    <title>Admin - Performance & SMS | Understory</title>
     <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="logo">Understory</div>
+            <div class="logo">UNDERSTORY</div>
             <nav class="nav">
-                <a href="/dashboard" class="nav-link">← Tilbage</a>
-                <a href="/admin" class="nav-link active">🏆 Community</a>
+                <a href="/dashboard" class="nav-link">Tilbage til Dashboard</a>
                 <button class="btn-logout" onclick="logout()">Log ud</button>
             </nav>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <h1 class="hero-title">Valuable Host Community</h1>
-            <p class="hero-subtitle">Vores bedste oplevelsesudbydere certificeret af kundernes vurderinger</p>
-        </div>
-    </section>
-
-    <!-- Stats Overview -->
-    <section class="stats-section">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalHosts">-</div>
-                    <div class="stat-label">Værter i alt</div>
-                </div>
-                <div class="stat-card stat-card-highlight">
-                    <div class="stat-number" id="hostsWithBadge">-</div>
-                    <div class="stat-label">⭐ Valuable Hosts</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalEvaluations">-</div>
-                    <div class="stat-label">Evalueringer (90 dage)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="avgRating">-</div>
-                    <div class="stat-label">Gennemsnitlig rating</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Main Content -->
     <main class="main">
         <div class="container">
             
-            <!-- Admin Actions (only visible with admin cookie) -->
-            <div class="admin-actions" id="adminActions" style="display: none;">
-                <h2>Admin Værktøjer</h2>
-                <div class="admin-tools">
-                    <div class="tool-card">
-                        <h3>Send SMS Evaluering</h3>
-                        <form id="sendSmsForm" class="admin-form">
-                            <div class="form-group">
-                                <label for="smsHostId">Vært ID:</label>
-                                <input type="number" id="smsHostId" required placeholder="1">
-                            </div>
-                            <div class="form-group">
-                                <label for="smsPhones">Telefonnumre (E.164 format):</label>
-                                <textarea id="smsPhones" rows="3" placeholder="+4512345678&#10;+4587654321" required></textarea>
-                                <small>Et nummer per linje, start med landekode (f.eks. +45)</small>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Send SMS</button>
-                        </form>
-                        <div id="smsResult" class="result-message"></div>
-                    </div>
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Performance & SMS Management</h1>
+                <p>Se performance data og send SMS til kunder</p>
+            </div>
 
-                    <div class="tool-card">
-                        <h3>Manuel Badge Kontrol</h3>
-                        <form id="badgeOverrideForm" class="admin-form">
-                            <div class="form-group">
-                                <label for="overrideHostId">Vært ID:</label>
-                                <input type="number" id="overrideHostId" required placeholder="1">
-                            </div>
-                            <div class="form-group">
-                                <label for="overrideValue">Override værdi:</label>
-                                <select id="overrideValue" required>
-                                    <option value="auto">Auto (brug beregning)</option>
-                                    <option value="on">On (tving badge)</option>
-                                    <option value="off">Off (fjern badge)</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Opdater Badge</button>
-                        </form>
-                        <div id="overrideResult" class="result-message"></div>
+            <!-- Host Selector -->
+            <div class="host-selector-card">
+                <label for="hostSelect">Vælg virksomhed:</label>
+                <select id="hostSelect" class="host-select" onchange="loadHostData()">
+                    <option value="">Indlæser...</option>
+                </select>
+            </div>
+
+            <!-- Performance Section -->
+            <div class="performance-section">
+                <h2>Performance Data</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgRating">-</div>
+                        <div class="stat-label">Gennemsnitlig Rating</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="reviewCount">-</div>
+                        <div class="stat-label">Anmeldelser (90 dage)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="badgeStatus">-</div>
+                        <div class="stat-label">Badge Status</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="leaderboardRank">-</div>
+                        <div class="stat-label">Placering</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Top 40 Leaderboard -->
-            <section class="leaderboard-section">
-                <div class="section-header">
-                    <h2 class="section-title">🏆 Top 40 Valuable Hosts</h2>
-                    <p class="section-description">
-                        Baseret på gennemsnitlig kundevurdering og antal anmeldelser de seneste 90 dage
-                    </p>
-                </div>
-
-                <div class="leaderboard" id="leaderboard">
-                    <div class="loading">Loading leaderboard...</div>
-                </div>
-            </section>
-
-            <!-- Community Stories Section (matching Understory design) -->
-            <section class="stories-section">
-                <h2 class="section-title">Historier fra vores værter</h2>
-                
-                <div class="stories-grid">
-                    <!-- Story Card 1 -->
-                    <div class="story-card">
-                        <div class="story-quote">
-                            <p>"The features in Understory work really well. Super clear, super easy to get an overview of your bookings. I've had to move some bookings several times, and it's super easy to do via Understory. All in all, a great experience at a very good price."</p>
-                        </div>
-                        <div class="story-author">
-                            <div class="author-badge">⭐ Valuable Host</div>
-                            <div class="author-name">- Henrik H.</div>
-                        </div>
-                        <div class="trustpilot-badge">
-                            <span class="star">★</span> Trustpilot
-                        </div>
+            <!-- SMS Send Section -->
+            <div class="sms-section">
+                <h2>Send SMS Evaluering</h2>
+                <form id="smsForm" class="sms-form">
+                    <div class="form-group">
+                        <label for="customerPhone">Kundens Telefonnummer</label>
+                        <input type="tel" id="customerPhone" placeholder="+4512345678" required>
+                        <small>Format: +45XXXXXXXX</small>
                     </div>
+                    <button type="submit" class="btn btn-primary">Send SMS</button>
+                </form>
+                <div id="smsStatus" class="sms-status"></div>
+            </div>
 
-                    <!-- Story Card 2 -->
-                    <div class="story-card">
-                        <div class="story-quote">
-                            <p>"User-friendly and beautifully designed. Very easy and quick to get started. These are all extremely important factors for an entrepreneur. Thanks. I'm a fan!"</p>
-                        </div>
-                        <div class="story-author">
-                            <div class="author-badge">⭐ Valuable Host</div>
-                            <div class="author-name">- The Woodland Lodge</div>
-                        </div>
-                        <div class="trustpilot-badge">
-                            <span class="star">★</span> Trustpilot
-                        </div>
-                    </div>
-
-                    <!-- Story Card 3 -->
-                    <div class="story-card">
-                        <div class="story-quote">
-                            <p>"It's more fun to spend time creating amazing experiences for guests than sitting behind a computer screen. Thank you for the collaboration so far - I'm looking forward to all the exciting new developments ahead."</p>
-                        </div>
-                        <div class="story-author">
-                            <div class="author-badge">⭐ Valuable Host</div>
-                            <div class="author-name">- Jacob G. - Knallertoplevelser.dk</div>
-                        </div>
-                        <div class="trustpilot-badge">
-                            <span class="star">★</span> Trustpilot
-                        </div>
-                    </div>
+            <!-- Leaderboard Section -->
+            <div class="leaderboard-section">
+                <h2>Top 40 Leaderboard</h2>
+                <div class="leaderboard-table" id="leaderboardTable">
+                    <div class="loading">Indlæser...</div>
                 </div>
-            </section>
+            </div>
+
+            <!-- Recent Evaluations -->
+            <div class="evaluations-section">
+                <h2>Seneste Evaluations</h2>
+                <div class="evaluations-table" id="evaluationsTable">
+                    <div class="loading">Indlæser...</div>
+                </div>
+            </div>
 
         </div>
     </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>VÆRTER</h3>
-                    <a href="#">Wall of love</a>
-                </div>
-                <div class="footer-section">
-                    <h3>HISTORIER</h3>
-                    <a href="#">Danmarks første surfskole for folk med handicap</a>
-                    <a href="#">Når whiskyen er en rejse til verdens ende</a>
-                    <a href="#">Eksklusive events for oplevelsesværter</a>
-                </div>
-                <div class="footer-section">
-                    <p>&copy; 2025 Understory. All rights reserved.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
 
     <script src="/admin/admin.js"></script>
 </body>

@@ -1,111 +1,94 @@
 // Dashboard logic - handles admin vs host views
 
-/**
- * Get cookie value
- */
-function getCookie(name) {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const [key, value] = cookie.trim().split('=');
-        if (key === name) return value;
-    }
-    return null;
-}
+const API_BASE = window.location.origin;
 
 /**
- * Check authentication
+ * Check authentication via JWT
  */
-function checkAuth() {
-    const role = getCookie('user_role');
-    
-    if (!role) {
-        console.log('❌ Not authenticated, redirecting to login...');
+async function checkAuth() {
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/me`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.log('Not authenticated, redirecting to login...');
+            window.location.href = '/login';
+            return null;
+        }
+        
+        return data.user;
+    } catch (error) {
+        console.error('Auth check failed:', error);
         window.location.href = '/login';
         return null;
     }
-    
-    return role;
-}
-
-/**
- * Get host ID from cookie
- */
-function getHostId() {
-    return getCookie('host_id');
 }
 
 /**
  * Initialize dashboard based on role
  */
-function initDashboard() {
-    const role = checkAuth();
-    if (!role) return;
+async function initDashboard() {
+    const user = await checkAuth();
+    if (!user) return;
     
-    const hostId = getHostId();
+    console.log('User logged in:', user);
     
-    if (role === 'admin') {
-        setupAdminView();
-    } else if (role === 'host') {
-        setupHostView(hostId);
+    if (user.role === 'admin') {
+        setupAdminView(user);
+    } else if (user.role === 'host') {
+        setupHostView(user);
     }
 }
 
 /**
  * Setup Admin view
  */
-function setupAdminView() {
-    console.log('👨‍💼 Setting up Admin view...');
+function setupAdminView(user) {
+    console.log('Setting up Admin view');
     
-    document.getElementById('welcomeTitle').textContent = 'Admin Dashboard';
-    document.getElementById('welcomeSubtitle').textContent = 'Fuld adgang til alle butikker og funktioner';
+    document.getElementById('welcomeTitle').textContent = `Velkommen, ${user.name}`;
+    document.getElementById('welcomeSubtitle').textContent = 'Administrator dashboard';
     
-    // Show store selector
-    document.getElementById('adminStoreSelect').style.display = 'block';
+    // Update card 1
+    document.querySelector('#storefrontCard h2').textContent = 'Se Shopfronts';
+    document.querySelector('#storefrontCard p').textContent = 'Se alle butikkers offentlige sider';
     
-    // Update descriptions
-    document.getElementById('storefrontDesc').textContent = 'Se enhver butiks storefront (vælg butik ovenfor)';
-    document.getElementById('performanceDesc').textContent = 'Se alle butikkers performance og send SMS';
+    // Update card 2
+    document.querySelector('#performanceCard h2').textContent = 'Performance & SMS';
+    document.querySelector('#performanceCard p').textContent = 'Se performance data og send SMS';
 }
 
 /**
  * Setup Host view
  */
-async function setupHostView(hostId) {
-    console.log(`⭐ Setting up Host view for host ID: ${hostId}`);
+async function setupHostView(user) {
+    console.log('Setting up Host view for:', user.name);
     
-    // Fetch host data
-    try {
-        const response = await fetch(`/api/public/host/${hostId}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            const hostName = data.host.name;
-            
-            document.getElementById('welcomeTitle').textContent = `Velkommen, ${hostName}!`;
-            document.getElementById('welcomeSubtitle').textContent = 'Din butik og performance data';
-            
-            // Update descriptions
-            document.getElementById('storefrontDesc').textContent = 'Se din offentlige butikside';
-            document.getElementById('performanceDesc').textContent = 'Se dine ratings og badge status';
-        }
-    } catch (error) {
-        console.error('Error fetching host data:', error);
-        document.getElementById('welcomeTitle').textContent = 'Velkommen!';
-    }
+    document.getElementById('welcomeTitle').textContent = `Velkommen, ${user.name}`;
+    document.getElementById('welcomeSubtitle').textContent = 'Din butiks dashboard';
+    
+    // Update card 1
+    document.querySelector('#storefrontCard h2').textContent = 'Min Shopfront';
+    document.querySelector('#storefrontCard p').textContent = 'Se din offentlige butikside';
+    
+    // Update card 2
+    document.querySelector('#performanceCard h2').textContent = 'Performance';
+    document.querySelector('#performanceCard p').textContent = 'Se dine ratings og badge status';
 }
 
 /**
  * Navigate to Storefront
  */
-function goToStorefront() {
-    const role = getCookie('user_role');
+async function goToStorefront() {
+    const user = await checkAuth();
+    if (!user) return;
     
-    if (role === 'admin') {
-        const storeId = document.getElementById('storeSelect').value;
-        window.location.href = `/storefront/${storeId}`;
-    } else {
-        const hostId = getHostId();
-        window.location.href = `/storefront/${hostId}`;
+    if (user.role === 'admin') {
+        // Admin: Go to first host's storefront (or could show selector)
+        window.location.href = '/storefront/1';
+    } else if (user.role === 'host') {
+        // Host: Go to own storefront
+        window.location.href = `/storefront/${user.hostId}`;
     }
 }
 
@@ -119,13 +102,15 @@ function goToPerformance() {
 /**
  * Logout function
  */
-function logout() {
-    // Clear all cookies
-    document.cookie.split(";").forEach((c) => {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
+async function logout() {
+    try {
+        await fetch(`${API_BASE}/api/auth/logout`, {
+            method: 'POST'
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
     
-    console.log('👋 Logged out');
     window.location.href = '/login';
 }
 
