@@ -15,7 +15,7 @@ router.get('/host/:hostId', async (req, res) => {
         const hostQuery = `
             SELECT 
                 h.host_id,
-                h.name as host_name,
+                h.host_name,
                 h.email,
                 h.phone,
                 v.reviews_count_90d,
@@ -175,7 +175,7 @@ router.get('/leaderboard', async (req, res) => {
         const query = `
             SELECT 
                 h.host_id,
-                h.name,
+                h.host_name as name,
                 v.reviews_count_90d,
                 v.avg_rating_90d,
                 v.has_valuable_host_badge
