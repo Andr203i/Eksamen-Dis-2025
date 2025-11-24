@@ -3,11 +3,54 @@
 const API_BASE = window.location.origin;
 
 /**
+ * Check authentication
+ */
+async function checkAuth() {
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/me`, {
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            console.log('Not authenticated, redirecting to login');
+            window.location.href = '/login';
+            return null;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success || !data.user) {
+            console.log('No user data, redirecting to login');
+            window.location.href = '/login';
+            return null;
+        }
+        
+        // Check if admin
+        if (data.user.role !== 'admin') {
+            console.log('Not an admin, redirecting to dashboard');
+            window.location.href = '/dashboard';
+            return null;
+        }
+        
+        return data.user;
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login';
+        return null;
+    }
+}
+
+/**
  * Load statistics overview
  */
 async function loadStats() {
     try {
-        const response = await fetch(`${API_BASE}/api/admin/stats/overview`);
+        const response = await fetch(`${API_BASE}/api/admin/stats/overview`, {
+            credentials: 'include'
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -29,7 +72,9 @@ async function loadStats() {
  */
 async function loadLeaderboard() {
     try {
-        const response = await fetch(`${API_BASE}/api/admin/hosts/top40`);
+        const response = await fetch(`${API_BASE}/api/admin/hosts/top40`, {
+            credentials: 'include'
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -122,6 +167,7 @@ document.getElementById('sendSmsForm').addEventListener('submit', async (e) => {
         const response = await fetch(`${API_BASE}/api/admin/evaluations/send`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
                 hostId: parseInt(hostId),
                 phoneNumbers
@@ -131,7 +177,10 @@ document.getElementById('sendSmsForm').addEventListener('submit', async (e) => {
         const data = await response.json();
         
         if (data.success) {
-            resultDiv.textContent = `✅ SMS sendt til ${data.sent} numre! (${data.failed} fejlede)`;
+            resultDiv.textContent = `✅ SMS sendt til ${data.sent} numre!`;
+            if (data.failed > 0) {
+                resultDiv.textContent += ` (${data.failed} fejlede)`;
+            }
             resultDiv.className = 'result-message success';
             document.getElementById('sendSmsForm').reset();
         } else {
@@ -162,6 +211,7 @@ document.getElementById('badgeOverrideForm').addEventListener('submit', async (e
         const response = await fetch(`${API_BASE}/api/admin/hosts/${hostId}/badge-override`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ override })
         });
         
@@ -187,38 +237,31 @@ document.getElementById('badgeOverrideForm').addEventListener('submit', async (e
 });
 
 /**
- * Check if user has admin cookie (simple auth)
- */
-function checkAdminAccess() {
-    // Check for admin cookie
-    const isAdmin = document.cookie.includes('admin_session');
-    
-    if (isAdmin) {
-        document.getElementById('adminActions').style.display = 'block';
-        console.log('✅ Admin access granted');
-    } else {
-        console.log('👤 Public view - no admin access');
-    }
-}
-
-/**
  * Logout function
  */
-function logout() {
-    document.cookie.split(";").forEach((c) => {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
+async function logout() {
+    try {
+        await fetch(`${API_BASE}/api/auth/logout`, { 
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
     window.location.href = '/login';
 }
 
 /**
  * Initialize page
  */
-document.addEventListener('DOMContentLoaded', () => {
+async function initPage() {
     console.log('📊 Loading admin dashboard...');
     
-    // Check admin access
-    checkAdminAccess();
+    // Check authentication first
+    const user = await checkAuth();
+    if (!user) return;
+    
+    console.log('✅ Admin authenticated:', user);
     
     // Load data
     loadStats();
@@ -229,4 +272,9 @@ document.addEventListener('DOMContentLoaded', () => {
         loadStats();
         loadLeaderboard();
     }, 30000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    initPage();
 });
