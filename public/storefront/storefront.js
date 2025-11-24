@@ -1,27 +1,33 @@
-// Storefront logic
+// Storefront JavaScript - Display host info and Valuable Host badge
 
 const API_BASE = window.location.origin;
 
 /**
  * Get host ID from URL
  */
-function getHostIdFromUrl() {
-    const pathParts = window.location.pathname.split('/');
-    return pathParts[pathParts.length - 1];
+function getHostIdFromURL() {
+    const path = window.location.pathname;
+    const match = path.match(/\/storefront\/(\d+)/);
+    return match ? parseInt(match[1]) : null;
 }
 
 /**
- * Load host data from API
+ * Load host data
  */
 async function loadHostData() {
-    const hostId = getHostIdFromUrl();
+    const hostId = getHostIdFromURL();
+    
+    if (!hostId) {
+        console.error('No host ID in URL');
+        return;
+    }
     
     try {
         const response = await fetch(`${API_BASE}/api/public/host/${hostId}`);
         const data = await response.json();
         
         if (data.success) {
-            displayHostInfo(data.host);
+            displayHostData(data.host);
         } else {
             console.error('Failed to load host data:', data.error);
         }
@@ -31,19 +37,19 @@ async function loadHostData() {
 }
 
 /**
- * Display host information
+ * Display host data on page
  */
-function displayHostInfo(host) {
-    // Update page title
-    document.title = `${host.experience_name} | Understory`;
-    
-    // Update experience title
-    document.getElementById('experienceTitle').textContent = host.experience_name;
-    
+function displayHostData(host) {
     // Update host name
     const hostNameEl = document.getElementById('hostName');
     if (hostNameEl) {
         hostNameEl.textContent = host.name;
+    }
+    
+    // Update title
+    const titleEl = document.getElementById('experienceTitle');
+    if (titleEl) {
+        titleEl.textContent = host.experience_name || `Oplevelse hos ${host.name}`;
     }
     
     // Update location
@@ -53,9 +59,9 @@ function displayHostInfo(host) {
     }
     
     // Update description
-    const descriptionEl = document.getElementById('description');
-    if (descriptionEl) {
-        descriptionEl.textContent = host.description || 'En fantastisk oplevelse';
+    const descEl = document.getElementById('description');
+    if (descEl) {
+        descEl.textContent = host.description || 'Unik oplevelse';
     }
     
     // Update price
@@ -64,26 +70,33 @@ function displayHostInfo(host) {
         priceEl.textContent = `Fra ${host.price || 200} kr.`;
     }
     
-    // **VALUABLE HOST BADGE** - Show if host has badge
-    const badgeEl = document.getElementById('valuableHostBadge');
+    // Display Valuable Host Badge if applicable
     if (host.has_valuable_host_badge) {
-        badgeEl.style.display = 'flex';
-        
-        // Update badge stats
-        const ratingEl = document.querySelector('.badge-rating');
-        const reviewsEl = document.querySelector('.badge-reviews');
-        
-        if (ratingEl) {
-            ratingEl.textContent = host.avg_rating_90d ? host.avg_rating_90d.toFixed(1) : '4.8';
-        }
-        
-        if (reviewsEl) {
-            reviewsEl.textContent = `${host.reviews_count_90d || 0} anmeldelser`;
-        }
-    } else {
-        // Hide badge if host doesn't have it
-        badgeEl.style.display = 'none';
+        displayValuableHostBadge(host);
     }
+}
+
+/**
+ * Display Valuable Host Badge
+ */
+function displayValuableHostBadge(host) {
+    const badgeEl = document.getElementById('valuableHostBadge');
+    
+    if (!badgeEl) return;
+    
+    // Update badge data
+    const ratingEl = document.getElementById('badgeRating');
+    if (ratingEl) {
+        ratingEl.textContent = host.avg_rating_90d ? host.avg_rating_90d.toFixed(1) : '5.0';
+    }
+    
+    const reviewsEl = document.getElementById('badgeReviews');
+    if (reviewsEl) {
+        reviewsEl.textContent = `${host.reviews_count_90d || 0} anmeldelser`;
+    }
+    
+    // Show badge
+    badgeEl.style.display = 'flex';
 }
 
 /**
@@ -91,17 +104,14 @@ function displayHostInfo(host) {
  */
 async function logout() {
     try {
-        await fetch(`${API_BASE}/api/auth/logout`, {
-            method: 'POST'
-        });
+        await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST' });
     } catch (error) {
         console.error('Logout error:', error);
     }
-    
     window.location.href = '/login';
 }
 
-// Load data on page load
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadHostData();
 });
