@@ -3,48 +3,52 @@
 const API_BASE = window.location.origin;
 
 /**
- * Get cookie value
- */
-function getCookie(name) {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const [key, value] = cookie.trim().split('=');
-        if (key === name) return value;
-    }
-    return null;
-}
-
-/**
  * Check authentication
  */
-function checkAuth() {
-    const role = getCookie('user_role');
-    if (!role) {
+async function checkAuth() {
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/me`, {
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            console.log('Not authenticated, redirecting to login');
+            window.location.href = '/login';
+            return null;
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success || !data.user) {
+            console.log('No user data, redirecting to login');
+            window.location.href = '/login';
+            return null;
+        }
+        
+        return data.user;
+    } catch (error) {
+        console.error('Auth check failed:', error);
         window.location.href = '/login';
         return null;
     }
-    return role;
-}
-
-/**
- * Get host ID
- */
-function getHostId() {
-    return getCookie('host_id');
 }
 
 /**
  * Initialize page based on role
  */
 async function initPage() {
-    const role = checkAuth();
-    if (!role) return;
+    const user = await checkAuth();
+    if (!user) return;
     
-    if (role === 'admin') {
+    console.log('User authenticated:', user);
+    
+    if (user.role === 'admin') {
         setupAdminView();
-    } else if (role === 'host') {
-        const hostId = getHostId();
-        setupHostView(hostId);
+    } else if (user.role === 'host') {
+        setupHostView(user.hostId);
     }
 }
 
@@ -58,13 +62,16 @@ function setupAdminView() {
     document.getElementById('pageSubtitle').textContent = 'Se alle butikkers performance data';
     
     // Show store selector
-    document.getElementById('adminStoreSelect').style.display = 'flex';
+    const adminStoreSelect = document.getElementById('adminStoreSelect');
+    if (adminStoreSelect) {
+        adminStoreSelect.style.display = 'flex';
+    }
     
     // Show SMS form
-    document.getElementById('adminSmsForm').style.display = 'block';
-    
-    // Load events for SMS form
-    loadEvents();
+    const adminSmsForm = document.getElementById('adminSmsForm');
+    if (adminSmsForm) {
+        adminSmsForm.style.display = 'block';
+    }
     
     // Load performance data for first store
     loadPerformanceData();
@@ -90,7 +97,10 @@ async function setupHostView(hostId) {
     }
     
     // Show rank card for hosts
-    document.getElementById('rankCard').style.display = 'block';
+    const rankCard = document.getElementById('rankCard');
+    if (rankCard) {
+        rankCard.style.display = 'block';
+    }
     
     // Load performance data
     loadPerformanceData(hostId);
@@ -100,15 +110,21 @@ async function setupHostView(hostId) {
  * Load performance data
  */
 async function loadPerformanceData(specificHostId = null) {
-    const role = getCookie('user_role');
     let hostId = specificHostId;
     
     if (!hostId) {
-        if (role === 'admin') {
-            hostId = document.getElementById('storeSelect').value;
+        const storeSelect = document.getElementById('storeSelect');
+        if (storeSelect) {
+            hostId = storeSelect.value;
         } else {
-            hostId = getHostId();
+            const user = await checkAuth();
+            hostId = user ? user.hostId : null;
         }
+    }
+    
+    if (!hostId) {
+        console.error('No host ID available');
+        return;
     }
     
     try {
@@ -117,167 +133,86 @@ async function loadPerformanceData(specificHostId = null) {
         const hostData = await hostResponse.json();
         
         if (hostData.success) {
-            const badge = hostData.host.badge;
+            const host = hostData.host;
             
             // Update stats
-            document.getElementById('avgRating').textContent = badge.avgRating90d || '-';
-            document.getElementById('reviewCount').textContent = badge.reviewsCount90d || '0';
+            const avgRatingEl = document.getElementById('avgRating');
+            if (avgRatingEl) {
+                avgRatingEl.textContent = host.avg_rating_90d ? host.avg_rating_90d.toFixed(1) : '-';
+            }
+            
+            const reviewCountEl = document.getElementById('reviewCount');
+            if (reviewCountEl) {
+                reviewCountEl.textContent = host.reviews_count_90d || '0';
+            }
             
             // Badge status
-            if (badge.hasValuableHostBadge) {
-                document.getElementById('badgeIcon').textContent = '⭐';
-                document.getElementById('badgeStatus').textContent = 'Valuable Host';
-            } else {
-                document.getElementById('badgeIcon').textContent = '❌';
-                document.getElementById('badgeStatus').textContent = 'Ingen badge';
+            const badgeStatusEl = document.getElementById('badgeStatus');
+            if (badgeStatusEl) {
+                if (host.has_valuable_host_badge) {
+                    badgeStatusEl.innerHTML = '<span class="badge-yes">⭐ Valuable Host</span>';
+                } else {
+                    badgeStatusEl.innerHTML = '<span class="badge-no">Ikke optjent endnu</span>';
+                }
             }
+            
+            // Load reviews
+            loadReviews(hostId);
         }
-        
-        // Fetch reviews/evaluations
-        const reviewsResponse = await fetch(`${API_BASE}/api/admin/hosts/${hostId}/evaluations`);
-        const reviewsData = await reviewsResponse.json();
-        
-        if (reviewsData.success) {
-            displayRatingsTable(reviewsData.evaluations);
-        }
-        
-        // If host, get rank
-        if (role === 'host') {
-            await loadHostRank(hostId);
-        }
-        
     } catch (error) {
         console.error('Error loading performance data:', error);
-        document.getElementById('ratingsTableBody').innerHTML = '<tr><td colspan="4" class="empty-row">Kunne ikke indlæse data</td></tr>';
     }
 }
 
 /**
- * Display ratings table
+ * Load reviews
  */
-function displayRatingsTable(evaluations) {
-    const tbody = document.getElementById('ratingsTableBody');
+async function loadReviews(hostId) {
+    try {
+        const response = await fetch(`${API_BASE}/api/public/host/${hostId}/reviews?limit=10`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayReviews(data.reviews);
+        }
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+    }
+}
+
+/**
+ * Display reviews
+ */
+function displayReviews(reviews) {
+    const reviewsList = document.getElementById('reviewsList');
+    if (!reviewsList) return;
     
-    if (!evaluations || evaluations.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Ingen anmeldelser endnu</td></tr>';
+    if (reviews.length === 0) {
+        reviewsList.innerHTML = '<p>Ingen anmeldelser endnu</p>';
         return;
     }
     
-    tbody.innerHTML = evaluations.map(eval => {
-        const stars = '★'.repeat(eval.rating);
-        const date = new Date(eval.created_at).toLocaleDateString('da-DK');
-        const comment = eval.comment_text || '-';
-        const phone = eval.customer_phone ? `***${eval.customer_phone.slice(-4)}` : '-';
-        
-        return `
-            <tr>
-                <td>${date}</td>
-                <td>
-                    <div class="rating-number">${eval.rating}</div>
-                    <div class="rating-stars">${stars}</div>
-                </td>
-                <td>${comment}</td>
-                <td>${phone}</td>
-            </tr>
-        `;
-    }).join('');
+    reviewsList.innerHTML = reviews.map(review => `
+        <div class="review-item">
+            <div class="review-rating">${'★'.repeat(review.rating)}</div>
+            <div class="review-comment">${review.comment_text || 'Ingen kommentar'}</div>
+            <div class="review-date">${new Date(review.created_at).toLocaleDateString('da-DK')}</div>
+        </div>
+    `).join('');
 }
-
-/**
- * Load host rank (for host view)
- */
-async function loadHostRank(hostId) {
-    try {
-        const response = await fetch(`${API_BASE}/api/admin/hosts/top40`);
-        const data = await response.json();
-        
-        if (data.success) {
-            const rank = data.top40.findIndex(h => h.host_id == hostId) + 1;
-            
-            if (rank > 0) {
-                document.getElementById('rankValue').textContent = `#${rank}`;
-            } else {
-                document.getElementById('rankValue').textContent = 'Ikke i top 40';
-            }
-        }
-    } catch (error) {
-        console.error('Error loading rank:', error);
-    }
-}
-
-/**
- * Load events for SMS form
- */
-async function loadEvents() {
-    const storeId = document.getElementById('smsStoreSelect').value;
-    
-    try {
-        const response = await fetch(`${API_BASE}/api/admin/hosts/${storeId}/experiences`);
-        const data = await response.json();
-        
-        const eventSelect = document.getElementById('eventSelect');
-        
-        if (data.success && data.experiences.length > 0) {
-            eventSelect.innerHTML = data.experiences.map(exp => 
-                `<option value="${exp.experience_id}">${exp.title}</option>`
-            ).join('');
-        } else {
-            eventSelect.innerHTML = '<option value="">Ingen begivenheder</option>';
-        }
-    } catch (error) {
-        console.error('Error loading events:', error);
-        document.getElementById('eventSelect').innerHTML = '<option value="">Fejl ved indlæsning</option>';
-    }
-}
-
-/**
- * SMS form submit handler
- */
-document.getElementById('smsForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const hostId = document.getElementById('smsStoreSelect').value;
-    const phonesText = document.getElementById('phoneNumbers').value.trim();
-    const phoneNumbers = phonesText ? phonesText.split('\n').map(p => p.trim()).filter(p => p) : [];
-    
-    const resultDiv = document.getElementById('smsResult');
-    resultDiv.textContent = 'Sender SMS...';
-    resultDiv.className = 'result-message';
-    resultDiv.style.display = 'block';
-    
-    try {
-        const response = await fetch(`${API_BASE}/api/admin/evaluations/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                hostId: parseInt(hostId),
-                phoneNumbers: phoneNumbers.length > 0 ? phoneNumbers : ['+4512345678'] // Demo number
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            resultDiv.textContent = `✅ SMS sendt til ${data.sent} numre! (${data.failed} fejlede)`;
-            resultDiv.className = 'result-message success';
-            document.getElementById('smsForm').reset();
-        } else {
-            resultDiv.textContent = `❌ Fejl: ${data.error}`;
-            resultDiv.className = 'result-message error';
-        }
-    } catch (error) {
-        resultDiv.textContent = `❌ Netværksfejl: ${error.message}`;
-        resultDiv.className = 'result-message error';
-    }
-});
 
 /**
  * Logout function
  */
-function logout() {
-    document.cookie.split(";").forEach((c) => {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
+async function logout() {
+    try {
+        await fetch(`${API_BASE}/api/auth/logout`, { 
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
     window.location.href = '/login';
 }
 
