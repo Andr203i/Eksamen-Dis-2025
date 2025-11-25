@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Storefront - Understory</title>
-    <link rel="stylesheet" href="/storefront/storefront.css">
+    <title>Øl Smagning hos KBHBajer | Understory</title>
+    <link rel="stylesheet" href="/storefront/storefront.css?v=3">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="logo">UNDERSTORY</div>
+            <div class="logo">Understory</div>
             <nav class="nav">
-                <a href="/dashboard" class="nav-link">Tilbage</a>
-                <a href="/community" class="nav-link">Community</a>
+                <a href="/dashboard" class="nav-link">← Tilbage</a>
+                <a href="/community" class="nav-link">🏆 Community</a>
                 <button class="btn-logout" onclick="logout()">Log ud</button>
             </nav>
         </div>
@@ -23,9 +23,6 @@
     <main class="main">
         <div class="container">
             
-            <!-- Host Name -->
-            <div class="host-name" id="hostName">KBHBajer</div>
-            
             <!-- Hero Image -->
             <div class="hero-image">
                 <img src="https://images.unsplash.com/photo-1608270586620-248524c67de9?w=1200&h=400&fit=crop" 
@@ -34,72 +31,91 @@
             </div>
 
             <div class="content-grid">
-                <!-- Left Column -->
-                <div class="experience-content">
+                <!-- Left Column - Experience Info -->
+                <div class="experience-info">
                     <h1 class="experience-title" id="experienceTitle">Øl Smagning hos KBHBajer</h1>
                     
-                    <!-- VALUABLE HOST BADGE -->
+                    <!-- Host Badge - VALUABLE HOST -->
                     <div class="valuable-host-badge" id="valuableHostBadge" style="display: none;">
-                        <div class="badge-icon">★</div>
+                        <div class="badge-icon">⭐</div>
                         <div class="badge-content">
                             <div class="badge-title">Valuable Host</div>
                             <div class="badge-subtitle">Certificeret af Understory</div>
                         </div>
-                        <div class="badge-stats">
-                            <div class="badge-rating" id="badgeRating">4.9</div>
-                            <div class="badge-reviews" id="badgeReviews">15 anmeldelser</div>
+                    </div>
+
+                    <div class="experience-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">📍 Lokation</span>
+                            <span class="meta-value" id="experienceLocation">Rådhuspladsen 1, 1553 København</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">💰 Pris</span>
+                            <span class="meta-value" id="experiencePrice">200 kr</span>
                         </div>
                     </div>
-                    
-                    <!-- Location -->
-                    <div class="experience-details">
-                        <div class="detail-item">
-                            <span class="detail-icon">📍</span>
-                            <span id="location">Rådhuspladsen 1, 1553 København</span>
+
+                    <div class="experience-description">
+                        <h2>Om Oplevelsen</h2>
+                        <p id="experienceDesc">
+                            En autentisk øl smagning i hjertet af København. Oplev det bedste af dansk ølkultur 
+                            med guidede smagninger og fortællinger om hver øls unikke historie.
+                        </p>
+                    </div>
+
+                    <!-- Host Reviews Summary -->
+                    <div class="reviews-summary">
+                        <h2>Kundevurderinger</h2>
+                        <div class="rating-overview">
+                            <div class="rating-number" id="avgRating">-</div>
+                            <div class="rating-details">
+                                <div class="rating-stars" id="ratingStars">★★★★★</div>
+                                <div class="review-count" id="reviewCount">Baseret på 0 anmeldelser</div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- What's Included -->
-                    <div class="section">
-                        <h2>Hvad er inkluderet?</h2>
-                        <p id="description">Bajer</p>
-                    </div>
-                    
-                    <!-- Practical Info -->
-                    <div class="section">
-                        <h2>Praktisk information</h2>
-                        <p>Man skal gå hjem fuld</p>
-                    </div>
-                    
-                    <!-- Gifts -->
-                    <div class="section">
-                        <h2>Køb et gavekort</h2>
-                        <p>Giv en du holder af en oplevelse, de aldrig glemmer.</p>
-                        <p>Når du giver gavekort til gavekort og har også mulighed for at tilføje personlig hilsen til modtageren. Du modtager gavekortet på mail.</p>
-                        <button class="btn btn-secondary">Køb gavekort</button>
+
+                    <!-- Recent Reviews -->
+                    <div class="recent-reviews">
+                        <h3>Seneste Anmeldelser</h3>
+                        <div id="reviewsList" class="reviews-list">
+                            <p>Indlæser...</p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Right Column - Booking -->
                 <div class="booking-sidebar">
                     <div class="booking-card">
-                        <div class="price" id="price">Fra 200 kr.</div>
-                        
-                        <div class="booking-notice">
-                            <h3>Prøv igen senere</h3>
-                            <p>Vi er desværre ikke helt klar til at modtage bookinger endnu, men vi arbejder på sagen</p>
+                        <div class="booking-price">
+                            <span class="price-amount">200 kr</span>
+                            <span class="price-label">per person</span>
                         </div>
                         
-                        <button class="btn btn-primary" disabled>Køb som gave</button>
-                        <button class="btn btn-secondary" disabled>Book nu</button>
+                        <button class="btn-book" onclick="bookExperience()">
+                            Book Oplevelse
+                        </button>
                         
-                        <div class="booking-footer">
-                            Ingen passende datoer? <a href="#">Få besked</a>
+                        <div class="booking-info">
+                            <p>✓ Gratis afbestilling op til 24 timer før</p>
+                            <p>✓ Øjeblikkelig bekræftelse</p>
+                            <p>✓ Mobil voucher accepteret</p>
                         </div>
                     </div>
-                    
-                    <div class="understory-badge">
-                        Sikker booking med Understory
+
+                    <!-- Host Info Card -->
+                    <div class="host-card">
+                        <h3>Din Vært</h3>
+                        <div class="host-info">
+                            <div class="host-avatar">🎭</div>
+                            <div class="host-details">
+                                <div class="host-name" id="hostName">KBHBajer</div>
+                                <div class="host-badge" id="hostBadge">Host siden 2024</div>
+                            </div>
+                        </div>
+                        <p class="host-bio">
+                            Erfaren guide med passion for dansk ølkultur. Over 100 glade gæster.
+                        </p>
                     </div>
                 </div>
             </div>

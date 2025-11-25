@@ -89,8 +89,8 @@ router.get('/host/:hostId', async (req, res) => {
 router.get('/host/:hostId/reviews', async (req, res) => {
     try {
         const { hostId } = req.params;
-        const { limit = 10 } = req.query;
         
+        // FIXED: Hardcoded LIMIT instead of parameter
         const query = `
             SELECT 
                 rating,
@@ -101,10 +101,11 @@ router.get('/host/:hostId/reviews', async (req, res) => {
                 AND created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)
                 AND comment_text IS NOT NULL
             ORDER BY created_at DESC
-            LIMIT ?
+            LIMIT 10
         `;
         
-        const result = await executeQuery(query, [parseInt(hostId), parseInt(limit)]);
+        // FIXED: Only pass hostId, not limit
+        const result = await executeQuery(query, [parseInt(hostId)]);
         
         res.json({
             success: true,

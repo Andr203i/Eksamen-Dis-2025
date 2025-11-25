@@ -55,12 +55,19 @@ async function loadStats() {
         
         if (data.success) {
             const stats = data.stats;
-            document.getElementById('totalHosts').textContent = stats.total_hosts || '0';
-            document.getElementById('hostsWithBadge').textContent = stats.hosts_with_badge || '0';
-            document.getElementById('totalEvaluations').textContent = stats.evaluations_90d || '0';
-            document.getElementById('avgRating').textContent = stats.avg_rating_90d 
-                ? parseFloat(stats.avg_rating_90d).toFixed(1) 
-                : '-';
+            const totalHostsEl = document.getElementById('totalHosts');
+            const hostsWithBadgeEl = document.getElementById('hostsWithBadge');
+            const totalEvaluationsEl = document.getElementById('totalEvaluations');
+            const avgRatingEl = document.getElementById('avgRating');
+            
+            if (totalHostsEl) totalHostsEl.textContent = stats.total_hosts || '0';
+            if (hostsWithBadgeEl) hostsWithBadgeEl.textContent = stats.hosts_with_badge || '0';
+            if (totalEvaluationsEl) totalEvaluationsEl.textContent = stats.evaluations_90d || '0';
+            if (avgRatingEl) {
+                avgRatingEl.textContent = stats.avg_rating_90d 
+                    ? parseFloat(stats.avg_rating_90d).toFixed(1) 
+                    : '-';
+            }
         }
     } catch (error) {
         console.error('Error loading stats:', error);
@@ -93,6 +100,11 @@ async function loadLeaderboard() {
  */
 function displayLeaderboard(hosts) {
     const leaderboard = document.getElementById('leaderboard');
+    
+    if (!leaderboard) {
+        console.error('Leaderboard element not found');
+        return;
+    }
     
     if (hosts.length === 0) {
         leaderboard.innerHTML = '<div class="loading">Ingen værter at vise endnu</div>';
@@ -145,96 +157,10 @@ function displayLeaderboard(hosts) {
  */
 function showLeaderboardError(message) {
     const leaderboard = document.getElementById('leaderboard');
-    leaderboard.innerHTML = `<div class="loading" style="color: #D32F2F;">${message}</div>`;
+    if (leaderboard) {
+        leaderboard.innerHTML = `<div class="loading" style="color: #D32F2F;">${message}</div>`;
+    }
 }
-
-/**
- * Send SMS Evaluation Form Handler
- */
-document.getElementById('sendSmsForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const hostId = document.getElementById('smsHostId').value;
-    const phonesText = document.getElementById('smsPhones').value;
-    const phoneNumbers = phonesText.split('\n').map(p => p.trim()).filter(p => p);
-    
-    const resultDiv = document.getElementById('smsResult');
-    resultDiv.textContent = 'Sender SMS...';
-    resultDiv.className = 'result-message';
-    resultDiv.style.display = 'block';
-    
-    try {
-        const response = await fetch(`${API_BASE}/api/admin/evaluations/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-                hostId: parseInt(hostId),
-                phoneNumbers
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            resultDiv.textContent = `✅ SMS sendt til ${data.sent} numre!`;
-            if (data.failed > 0) {
-                resultDiv.textContent += ` (${data.failed} fejlede)`;
-            }
-            resultDiv.className = 'result-message success';
-            document.getElementById('sendSmsForm').reset();
-        } else {
-            resultDiv.textContent = `❌ Fejl: ${data.error}`;
-            resultDiv.className = 'result-message error';
-        }
-    } catch (error) {
-        resultDiv.textContent = `❌ Netværksfejl: ${error.message}`;
-        resultDiv.className = 'result-message error';
-    }
-});
-
-/**
- * Badge Override Form Handler
- */
-document.getElementById('badgeOverrideForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const hostId = document.getElementById('overrideHostId').value;
-    const override = document.getElementById('overrideValue').value;
-    
-    const resultDiv = document.getElementById('overrideResult');
-    resultDiv.textContent = 'Opdaterer badge...';
-    resultDiv.className = 'result-message';
-    resultDiv.style.display = 'block';
-    
-    try {
-        const response = await fetch(`${API_BASE}/api/admin/hosts/${hostId}/badge-override`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ override })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            resultDiv.textContent = `✅ Badge opdateret til "${override}"`;
-            resultDiv.className = 'result-message success';
-            
-            // Reload leaderboard to see changes
-            setTimeout(() => {
-                loadLeaderboard();
-                loadStats();
-            }, 1000);
-        } else {
-            resultDiv.textContent = `❌ Fejl: ${data.error}`;
-            resultDiv.className = 'result-message error';
-        }
-    } catch (error) {
-        resultDiv.textContent = `❌ Netværksfejl: ${error.message}`;
-        resultDiv.className = 'result-message error';
-    }
-});
 
 /**
  * Logout function
@@ -267,11 +193,121 @@ async function initPage() {
     loadStats();
     loadLeaderboard();
     
+    // FIXED: Setup form handlers with null checks
+    setupFormHandlers();
+    
     // Auto-refresh every 30 seconds
     setInterval(() => {
         loadStats();
         loadLeaderboard();
     }, 30000);
+}
+
+/**
+ * Setup form handlers (with null checks)
+ */
+function setupFormHandlers() {
+    // Send SMS Form Handler
+    const sendSmsForm = document.getElementById('sendSmsForm');
+    if (sendSmsForm) {
+        sendSmsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const hostId = document.getElementById('smsHostId').value;
+            const phonesText = document.getElementById('smsPhones').value;
+            const phoneNumbers = phonesText.split('\n').map(p => p.trim()).filter(p => p);
+            
+            const resultDiv = document.getElementById('smsResult');
+            if (resultDiv) {
+                resultDiv.textContent = 'Sender SMS...';
+                resultDiv.className = 'result-message';
+                resultDiv.style.display = 'block';
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/evaluations/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        hostId: parseInt(hostId),
+                        phoneNumbers
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (resultDiv) {
+                    if (data.success) {
+                        resultDiv.textContent = `✅ SMS sendt til ${data.sent} numre!`;
+                        if (data.failed > 0) {
+                            resultDiv.textContent += ` (${data.failed} fejlede)`;
+                        }
+                        resultDiv.className = 'result-message success';
+                        sendSmsForm.reset();
+                    } else {
+                        resultDiv.textContent = `❌ Fejl: ${data.error}`;
+                        resultDiv.className = 'result-message error';
+                    }
+                }
+            } catch (error) {
+                if (resultDiv) {
+                    resultDiv.textContent = `❌ Netværksfejl: ${error.message}`;
+                    resultDiv.className = 'result-message error';
+                }
+            }
+        });
+    }
+    
+    // Badge Override Form Handler
+    const badgeOverrideForm = document.getElementById('badgeOverrideForm');
+    if (badgeOverrideForm) {
+        badgeOverrideForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const hostId = document.getElementById('overrideHostId').value;
+            const override = document.getElementById('overrideValue').value;
+            
+            const resultDiv = document.getElementById('overrideResult');
+            if (resultDiv) {
+                resultDiv.textContent = 'Opdaterer badge...';
+                resultDiv.className = 'result-message';
+                resultDiv.style.display = 'block';
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/hosts/${hostId}/badge-override`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ override })
+                });
+                
+                const data = await response.json();
+                
+                if (resultDiv) {
+                    if (data.success) {
+                        resultDiv.textContent = `✅ Badge opdateret til "${override}"`;
+                        resultDiv.className = 'result-message success';
+                        
+                        // Reload leaderboard to see changes
+                        setTimeout(() => {
+                            loadLeaderboard();
+                            loadStats();
+                        }, 1000);
+                    } else {
+                        resultDiv.textContent = `❌ Fejl: ${data.error}`;
+                        resultDiv.className = 'result-message error';
+                    }
+                }
+            } catch (error) {
+                if (resultDiv) {
+                    resultDiv.textContent = `❌ Netværksfejl: ${error.message}`;
+                    resultDiv.className = 'result-message error';
+                }
+            }
+        });
+    }
 }
 
 // Initialize

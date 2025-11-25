@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Understory</title>
+    <title>Dashboard - Understory Superhost</title>
     <link rel="stylesheet" href="/dashboard/dashboard.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="logo">UNDERSTORY</div>
+            <div class="logo">Understory</div>
             <nav class="nav">
-                <a href="/community" class="nav-link">Community</a>
+                <a href="/dashboard" class="nav-link">← Tilbage</a>
+                <a href="/community" class="nav-link">🏆 Community</a>
                 <button class="btn-logout" onclick="logout()">Log ud</button>
             </nav>
         </div>
@@ -28,19 +29,39 @@
                 <p id="welcomeSubtitle">Vælg hvad du vil se</p>
             </div>
 
-            <!-- 2-Column Grid -->
+            <!-- Admin: Store Selection (only for admin) -->
+            <div id="adminStoreSelect" class="store-selector" style="display: none;">
+                <label for="storeSelect">Vælg butik til Storefront:</label>
+                <select id="storeSelect" class="store-select">
+                    <option value="1">KBHBajer</option>
+                    <option value="2">Copenhagen Wine Tours</option>
+                    <option value="3">Nordic Food Experience</option>
+                    <option value="4">Danish Design Workshop</option>
+                    <option value="5">Viking History Tours</option>
+                </select>
+            </div>
+
+            <!-- 2-Column Layout -->
             <div class="dashboard-grid">
                 
-                <!-- Performance Box -->
-                <div class="dashboard-card" onclick="goToPerformance()">
-                    <h2>PERFORMANCE</h2>
-                    <p>Se dine ratings og badge status</p>
+                <!-- Storefront Card -->
+                <div class="dashboard-card" id="storefrontCard">
+                    <div class="card-icon">🏪</div>
+                    <h2>Storefront</h2>
+                    <p id="storefrontDesc">Se din butiks offentlige side med Valuable Host badge</p>
+                    <button class="btn btn-primary" onclick="goToStorefront()">
+                        Åbn Storefront
+                    </button>
                 </div>
 
-                <!-- Shopfront Box -->
-                <div class="dashboard-card" onclick="goToStorefront()">
-                    <h2>SHOP FRONT</h2>
-                    <p>Se din offentlige butikside</p>
+                <!-- Performance Card -->
+                <div class="dashboard-card" id="performanceCard">
+                    <div class="card-icon">📊</div>
+                    <h2>Performance</h2>
+                    <p id="performanceDesc">Se dine ratings, kommentarer og badge status</p>
+                    <button class="btn btn-accent" onclick="goToPerformance()">
+                        Åbn Performance
+                    </button>
                 </div>
 
             </div>
