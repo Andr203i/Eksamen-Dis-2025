@@ -1,44 +1,57 @@
-// Community/Leaderboard page logic
+// Community Page - Public Leaderboard (NO EMOJIS)
 
 const API_BASE = window.location.origin;
 
 /**
- * Check authentication
+ * Check authentication (optional for community page)
  */
 async function checkAuth() {
     try {
-        const response = await fetch(`${API_BASE}/api/auth/me`);
-        const data = await response.json();
+        const response = await fetch(`${API_BASE}/api/auth/me`, {
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         
-        if (!data.success) {
-            window.location.href = '/login';
-            return null;
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user) {
+                return data.user;
+            }
         }
-        
-        return data.user;
+        return null;
     } catch (error) {
-        console.error('Auth check failed:', error);
-        window.location.href = '/login';
         return null;
     }
 }
 
 /**
- * Load community stats
+ * Load community statistics
  */
-async function loadStats() {
+async function loadCommunityStats() {
     try {
         const response = await fetch(`${API_BASE}/api/public/community-stats`);
         const data = await response.json();
         
-        if (data.success) {
-            document.getElementById('totalHosts').textContent = data.stats.total_hosts || '-';
-            document.getElementById('valuableHosts').textContent = data.stats.valuable_hosts || '-';
-            document.getElementById('totalReviews').textContent = data.stats.total_reviews || '-';
-            document.getElementById('avgRating').textContent = data.stats.avg_rating ? data.stats.avg_rating.toFixed(1) : '-';
+        if (data.success && data.stats) {
+            const stats = data.stats;
+            
+            const totalHostsEl = document.getElementById('totalHosts');
+            const valuableHostsEl = document.getElementById('valuableHosts');
+            const totalReviewsEl = document.getElementById('totalReviews');
+            const avgRatingEl = document.getElementById('avgRating');
+            
+            if (totalHostsEl) totalHostsEl.textContent = stats.total_hosts || '0';
+            if (valuableHostsEl) valuableHostsEl.textContent = stats.valuable_hosts || '0';
+            if (totalReviewsEl) totalReviewsEl.textContent = stats.total_reviews || '0';
+            if (avgRatingEl) {
+                const rating = parseFloat(stats.avg_rating);
+                avgRatingEl.textContent = (!isNaN(rating) && rating > 0) ? rating.toFixed(1) : '-';
+            }
         }
     } catch (error) {
-        console.error('Error loading stats:', error);
+        console.error('Error loading community stats:', error);
     }
 }
 
@@ -50,81 +63,153 @@ async function loadLeaderboard() {
         const response = await fetch(`${API_BASE}/api/public/leaderboard`);
         const data = await response.json();
         
-        if (data.success && data.leaderboard.length > 0) {
+        if (data.success) {
             displayLeaderboard(data.leaderboard);
         } else {
-            document.getElementById('leaderboardTable').innerHTML = '<div class="loading">Failed to load leaderboard</div>';
+            showLeaderboardError('Kunne ikke indlæse leaderboard');
         }
     } catch (error) {
         console.error('Error loading leaderboard:', error);
-        document.getElementById('leaderboardTable').innerHTML = '<div class="loading">Failed to load leaderboard</div>';
+        showLeaderboardError('Kunne ikke forbinde til serveren');
     }
 }
 
 /**
- * Display leaderboard table
+ * Display leaderboard with SAFE parsing
  */
-function displayLeaderboard(leaderboard) {
-    const tableHTML = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Vært</th>
-                    <th>Rating</th>
-                    <th>Anmeldelser</th>
-                    <th>Badge</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${leaderboard.map((host, index) => `
-                    <tr>
-                        <td class="rank">#${index + 1}</td>
-                        <td>${host.name}</td>
-                        <td>${host.avg_rating_90d ? host.avg_rating_90d.toFixed(2) : 'N/A'}</td>
-                        <td>${host.reviews_count_90d || 0}</td>
-                        <td class="badge-cell">
-                            ${host.has_valuable_host_badge ? '<span class="badge-icon">★</span>' : '-'}
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
+function displayLeaderboard(hosts) {
+    const leaderboard = document.getElementById('leaderboard');
     
-    document.getElementById('leaderboardTable').innerHTML = tableHTML;
+    if (!leaderboard) {
+        console.error('Leaderboard element not found');
+        return;
+    }
+    
+    if (!hosts || hosts.length === 0) {
+        leaderboard.innerHTML = '<div class="loading">Ingen værter at vise endnu</div>';
+        return;
+    }
+    
+    leaderboard.innerHTML = hosts.map((host, index) => {
+        const rank = index + 1;
+        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+        
+        // SAFE parsing of rating - FIX for toFixed error
+        let ratingValue = '0.00';
+        let ratingStars = 0;
+        
+        if (host.avg_rating_90d !== null && host.avg_rating_90d !== undefined) {
+            const rating = parseFloat(host.avg_rating_90d);
+            if (!isNaN(rating) && rating > 0) {
+                ratingValue = rating.toFixed(2);
+                ratingStars = Math.round(rating);
+            }
+        }
+        
+        const stars = '★'.repeat(Math.max(0, Math.min(5, ratingStars)));
+        
+        // Badge indicator (only star emoji kept)
+        const badgeIcon = host.has_valuable_host_badge ? '⭐ ' : '';
+        
+        // Host name
+        const hostName = host.name || host.host_name || 'Unknown Host';
+        
+        // Review count
+        const reviewCount = host.reviews_count_90d || 0;
+        
+        return `
+            <div class="leaderboard-item">
+                <div class="rank ${rankClass}">${rank}</div>
+                
+                <div class="host-info">
+                    <div class="host-name">
+                        ${badgeIcon}${hostName}
+                    </div>
+                    <div class="host-stats">
+                        Host ID: ${host.host_id}
+                    </div>
+                </div>
+                
+                <div class="rating-display">
+                    <div class="rating-number">${ratingValue}</div>
+                    <div class="rating-stars">${stars}</div>
+                </div>
+                
+                <div class="reviews-count">
+                    <div class="reviews-number">${reviewCount}</div>
+                    <div class="reviews-label">anmeldelser</div>
+                </div>
+                
+                <div class="badge-status">
+                    ${host.has_valuable_host_badge 
+                        ? '<span class="badge-yes">Valuable Host</span>' 
+                        : '<span class="badge-no">-</span>'}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    console.log(`Loaded ${hosts.length} hosts to leaderboard`);
 }
 
 /**
- * Update back link based on role
+ * Show leaderboard error
  */
-async function updateNavigation() {
-    const user = await checkAuth();
-    if (!user) return;
-    
-    const backLink = document.getElementById('backLink');
-    if (user.role === 'admin') {
-        backLink.href = '/admin';
-    } else {
-        backLink.href = '/dashboard';
+function showLeaderboardError(message) {
+    const leaderboard = document.getElementById('leaderboard');
+    if (leaderboard) {
+        leaderboard.innerHTML = `<div class="loading" style="color: #D32F2F;">${message}</div>`;
     }
 }
 
 /**
- * Logout
+ * Logout function
  */
 async function logout() {
     try {
-        await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST' });
+        await fetch(`${API_BASE}/api/auth/logout`, { 
+            method: 'POST',
+            credentials: 'include'
+        });
     } catch (error) {
         console.error('Logout error:', error);
     }
     window.location.href = '/login';
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    updateNavigation();
-    loadStats();
+/**
+ * Initialize page
+ */
+async function initPage() {
+    console.log('Loading community page...');
+    
+    // Check if user is logged in (optional)
+    const user = await checkAuth();
+    
+    // Show/hide login button based on auth
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    if (user) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+    } else {
+        if (loginBtn) loginBtn.style.display = 'block';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    }
+    
+    // Load data
+    loadCommunityStats();
     loadLeaderboard();
+    
+    // Auto-refresh every 60 seconds
+    setInterval(() => {
+        loadCommunityStats();
+        loadLeaderboard();
+    }, 60000);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initPage();
 });
