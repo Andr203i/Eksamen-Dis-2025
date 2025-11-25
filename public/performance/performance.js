@@ -110,12 +110,12 @@ function displayPerformanceData(host) {
 
 /**
  * Load reviews with TABLE rendering
+ * FIXED: Use /reviews endpoint (not /evaluations)
  */
 async function loadReviews(hostId) {
     try {
-        const response = await fetch(`${API_BASE}/api/admin/hosts/${hostId}/evaluations?limit=50`, {
-            credentials: 'include'
-        });
+        // CORRECT endpoint name: /reviews
+        const response = await fetch(`${API_BASE}/api/public/host/${hostId}/reviews`);
         
         if (!response.ok) {
             console.error('Failed to load reviews');
@@ -125,8 +125,8 @@ async function loadReviews(hostId) {
         
         const data = await response.json();
         
-        if (data.success && data.evaluations) {
-            displayReviews(data.evaluations);
+        if (data.success && data.reviews) {
+            displayReviews(data.reviews);
         } else {
             showReviewsError('Ingen evalueringer tilgængelige');
         }
