@@ -1,6 +1,7 @@
-// Admin Dashboard - Top 40 Leaderboard & Admin Tools
+// Admin Dashboard - FIXED VERSION
 
 const API_BASE = window.location.origin;
+let currentUser = null;
 
 /**
  * Check authentication
@@ -44,17 +45,24 @@ async function checkAuth() {
 }
 
 /**
- * Load statistics overview
+ * Load overview statistics
  */
 async function loadStats() {
     try {
         const response = await fetch(`${API_BASE}/api/admin/stats/overview`, {
             credentials: 'include'
         });
+        
+        if (!response.ok) {
+            console.error('Failed to load stats:', response.status);
+            return;
+        }
+        
         const data = await response.json();
         
-        if (data.success) {
+        if (data.success && data.stats) {
             const stats = data.stats;
+            
             const totalHostsEl = document.getElementById('totalHosts');
             const hostsWithBadgeEl = document.getElementById('hostsWithBadge');
             const totalEvaluationsEl = document.getElementById('totalEvaluations');
@@ -64,13 +72,89 @@ async function loadStats() {
             if (hostsWithBadgeEl) hostsWithBadgeEl.textContent = stats.hosts_with_badge || '0';
             if (totalEvaluationsEl) totalEvaluationsEl.textContent = stats.evaluations_90d || '0';
             if (avgRatingEl) {
-                avgRatingEl.textContent = stats.avg_rating_90d 
-                    ? parseFloat(stats.avg_rating_90d).toFixed(1) 
-                    : '-';
+                const rating = parseFloat(stats.avg_rating_90d);
+                avgRatingEl.textContent = (!isNaN(rating) && rating > 0) ? rating.toFixed(2) : '-';
             }
         }
     } catch (error) {
         console.error('Error loading stats:', error);
+    }
+}
+
+/**
+ * Load all hosts dropdown
+ */
+async function loadHostsDropdown() {
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/hosts/top40`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to load hosts:', response.status);
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.top40) {
+            const select = document.getElementById('hostSelect');
+            if (!select) return;
+            
+            select.innerHTML = data.top40.map(host => 
+                `<option value="${host.host_id}">${host.host_name}</option>`
+            ).join('');
+            
+            // Load first host data
+            if (data.top40.length > 0) {
+                loadHostData();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading hosts:', error);
+    }
+}
+
+/**
+ * Load selected host data
+ */
+async function loadHostData() {
+    const hostId = document.getElementById('hostSelect')?.value;
+    if (!hostId) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/public/host/${hostId}`);
+        const data = await response.json();
+        
+        if (data.success && data.host) {
+            const host = data.host;
+            
+            // Update performance stats
+            const avgRatingEl = document.getElementById('avgRating');
+            const reviewCountEl = document.getElementById('reviewCount');
+            const badgeStatusEl = document.getElementById('badgeStatus');
+            const leaderboardRankEl = document.getElementById('leaderboardRank');
+            
+            if (avgRatingEl) {
+                const rating = parseFloat(host.avg_rating_90d);
+                avgRatingEl.textContent = (!isNaN(rating) && rating > 0) ? rating.toFixed(2) : '-';
+            }
+            
+            if (reviewCountEl) {
+                reviewCountEl.textContent = host.reviews_count_90d || '0';
+            }
+            
+            if (badgeStatusEl) {
+                badgeStatusEl.textContent = host.has_valuable_host_badge ? 'Valuable Host' : 'Ikke optjent';
+                badgeStatusEl.className = 'stat-value ' + (host.has_valuable_host_badge ? 'badge-yes' : 'badge-no');
+            }
+            
+            if (leaderboardRankEl) {
+                leaderboardRankEl.textContent = '-';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading host data:', error);
     }
 }
 
@@ -82,88 +166,139 @@ async function loadLeaderboard() {
         const response = await fetch(`${API_BASE}/api/admin/hosts/top40`, {
             credentials: 'include'
         });
+        
+        if (!response.ok) {
+            console.error('Failed to load leaderboard:', response.status);
+            showLeaderboardError('Kunne ikke indlæse rangliste');
+            return;
+        }
+        
         const data = await response.json();
         
-        if (data.success) {
+        if (data.success && data.top40) {
             displayLeaderboard(data.top40);
         } else {
-            showLeaderboardError('Failed to load leaderboard');
+            showLeaderboardError('Ingen data tilgængelig');
         }
     } catch (error) {
         console.error('Error loading leaderboard:', error);
-        showLeaderboardError('Failed to connect to server');
+        showLeaderboardError('Fejl ved indlæsning af data');
     }
 }
 
 /**
- * Display leaderboard entries
+ * Display leaderboard as TABLE
  */
 function displayLeaderboard(hosts) {
-    const leaderboard = document.getElementById('leaderboard');
+    const tableBody = document.getElementById('leaderboardTableBody');
     
-    if (!leaderboard) {
-        console.error('Leaderboard element not found');
+    if (!tableBody) {
+        console.error('Leaderboard table body element not found');
         return;
     }
     
-    if (hosts.length === 0) {
-        leaderboard.innerHTML = '<div class="loading">Ingen værter at vise endnu</div>';
+    if (!hosts || hosts.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Ingen værter at vise</td></tr>';
         return;
     }
     
-    leaderboard.innerHTML = hosts.map((host, index) => {
+    tableBody.innerHTML = hosts.map((host, index) => {
         const rank = index + 1;
-        const rankClass = rank <= 3 ? `rank-${rank}` : '';
-        const badgeIcon = host.final_badge_status ? '⭐' : '';
-        const ratingStars = '★'.repeat(Math.round(host.avg_rating_90d));
+        
+        // Safe rating parsing
+        let ratingValue = '0.00';
+        if (host.avg_rating_90d !== null && host.avg_rating_90d !== undefined) {
+            const rating = parseFloat(host.avg_rating_90d);
+            if (!isNaN(rating) && rating > 0) {
+                ratingValue = rating.toFixed(2);
+            }
+        }
+        
+        const badgeIcon = host.final_badge_status ? '⭐' : '-';
+        const reviewCount = host.count_90d || 0;
+        const hostName = host.host_name || 'Unknown Host';
         
         return `
-            <div class="leaderboard-item">
-                <div class="rank ${rankClass}">${rank}</div>
-                
-                <div class="host-info">
-                    <div class="host-name">
-                        ${badgeIcon} ${host.host_name}
-                    </div>
-                    <div class="host-stats">
-                        Host ID: ${host.host_id}
-                    </div>
-                </div>
-                
-                <div class="rating-display">
-                    <div class="rating-number">${parseFloat(host.avg_rating_90d).toFixed(2)}</div>
-                    <div class="rating-stars">${ratingStars}</div>
-                </div>
-                
-                <div class="reviews-count">
-                    <div class="reviews-number">${host.count_90d}</div>
-                    <div class="reviews-label">anmeldelser</div>
-                </div>
-                
-                <div class="badge-status">
-                    ${host.final_badge_status 
-                        ? '<span class="badge-yes">⭐ Badge</span>' 
-                        : '<span class="badge-no">-</span>'}
-                </div>
-            </div>
+            <tr>
+                <td>${rank}</td>
+                <td>${hostName}</td>
+                <td>${ratingValue}</td>
+                <td>${reviewCount}</td>
+                <td style="text-align: center;">${badgeIcon}</td>
+            </tr>
         `;
     }).join('');
     
-    console.log(`✅ Loaded ${hosts.length} hosts to leaderboard`);
+    console.log(`Loaded ${hosts.length} hosts to leaderboard`);
 }
 
 /**
  * Show leaderboard error
  */
 function showLeaderboardError(message) {
-    const leaderboard = document.getElementById('leaderboard');
-    if (leaderboard) {
-        leaderboard.innerHTML = `<div class="loading" style="color: #D32F2F;">${message}</div>`;
+    const tableBody = document.getElementById('leaderboardTableBody');
+    if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #D32F2F;">${message}</td></tr>`;
     }
 }
 
 /**
- * Logout function
+ * Send SMS Evaluation
+ */
+async function sendSMS(event) {
+    event.preventDefault();
+    
+    const hostId = document.getElementById('hostSelect')?.value;
+    const phone = document.getElementById('smsPhone')?.value;
+    const resultDiv = document.getElementById('smsResult');
+    
+    if (!hostId || !phone) {
+        if (resultDiv) {
+            resultDiv.textContent = 'Udfyld alle felter';
+            resultDiv.style.display = 'block';
+            resultDiv.style.color = '#D32F2F';
+        }
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/evaluations/send`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                hostId: parseInt(hostId),
+                phoneNumbers: [phone]
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (resultDiv) {
+            if (data.success) {
+                resultDiv.textContent = `SMS sendt! Sendt: ${data.sent}, Fejlet: ${data.failed}`;
+                resultDiv.style.color = '#4CAF50';
+                document.getElementById('smsPhone').value = '';
+            } else {
+                resultDiv.textContent = `Fejl: ${data.error || 'Kunne ikke sende SMS'}`;
+                resultDiv.style.color = '#D32F2F';
+            }
+            resultDiv.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error sending SMS:', error);
+        if (resultDiv) {
+            resultDiv.textContent = 'Fejl ved afsendelse af SMS';
+            resultDiv.style.color = '#D32F2F';
+            resultDiv.style.display = 'block';
+        }
+    }
+}
+
+/**
+ * Logout
  */
 async function logout() {
     try {
@@ -178,139 +313,35 @@ async function logout() {
 }
 
 /**
- * Initialize page
+ * Initialize admin dashboard
  */
-async function initPage() {
-    console.log('📊 Loading admin dashboard...');
+async function initAdmin() {
+    console.log('Loading admin dashboard...');
     
-    // Check authentication first
-    const user = await checkAuth();
-    if (!user) return;
+    currentUser = await checkAuth();
+    if (!currentUser) return;
     
-    console.log('✅ Admin authenticated:', user);
+    console.log('Admin authenticated:', currentUser);
     
-    // Load data
+    // Load all data
     loadStats();
+    loadHostsDropdown();
     loadLeaderboard();
     
-    // FIXED: Setup form handlers with null checks
-    setupFormHandlers();
+    // Setup SMS form
+    const smsForm = document.querySelector('.admin-form');
+    if (smsForm) {
+        smsForm.addEventListener('submit', sendSMS);
+    }
     
-    // Auto-refresh every 30 seconds
+    // Auto-refresh every 60 seconds
     setInterval(() => {
         loadStats();
         loadLeaderboard();
-    }, 30000);
+    }, 60000);
 }
 
-/**
- * Setup form handlers (with null checks)
- */
-function setupFormHandlers() {
-    // Send SMS Form Handler
-    const sendSmsForm = document.getElementById('sendSmsForm');
-    if (sendSmsForm) {
-        sendSmsForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const hostId = document.getElementById('smsHostId').value;
-            const phonesText = document.getElementById('smsPhones').value;
-            const phoneNumbers = phonesText.split('\n').map(p => p.trim()).filter(p => p);
-            
-            const resultDiv = document.getElementById('smsResult');
-            if (resultDiv) {
-                resultDiv.textContent = 'Sender SMS...';
-                resultDiv.className = 'result-message';
-                resultDiv.style.display = 'block';
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/admin/evaluations/send`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        hostId: parseInt(hostId),
-                        phoneNumbers
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (resultDiv) {
-                    if (data.success) {
-                        resultDiv.textContent = `✅ SMS sendt til ${data.sent} numre!`;
-                        if (data.failed > 0) {
-                            resultDiv.textContent += ` (${data.failed} fejlede)`;
-                        }
-                        resultDiv.className = 'result-message success';
-                        sendSmsForm.reset();
-                    } else {
-                        resultDiv.textContent = `❌ Fejl: ${data.error}`;
-                        resultDiv.className = 'result-message error';
-                    }
-                }
-            } catch (error) {
-                if (resultDiv) {
-                    resultDiv.textContent = `❌ Netværksfejl: ${error.message}`;
-                    resultDiv.className = 'result-message error';
-                }
-            }
-        });
-    }
-    
-    // Badge Override Form Handler
-    const badgeOverrideForm = document.getElementById('badgeOverrideForm');
-    if (badgeOverrideForm) {
-        badgeOverrideForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const hostId = document.getElementById('overrideHostId').value;
-            const override = document.getElementById('overrideValue').value;
-            
-            const resultDiv = document.getElementById('overrideResult');
-            if (resultDiv) {
-                resultDiv.textContent = 'Opdaterer badge...';
-                resultDiv.className = 'result-message';
-                resultDiv.style.display = 'block';
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/admin/hosts/${hostId}/badge-override`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ override })
-                });
-                
-                const data = await response.json();
-                
-                if (resultDiv) {
-                    if (data.success) {
-                        resultDiv.textContent = `✅ Badge opdateret til "${override}"`;
-                        resultDiv.className = 'result-message success';
-                        
-                        // Reload leaderboard to see changes
-                        setTimeout(() => {
-                            loadLeaderboard();
-                            loadStats();
-                        }, 1000);
-                    } else {
-                        resultDiv.textContent = `❌ Fejl: ${data.error}`;
-                        resultDiv.className = 'result-message error';
-                    }
-                }
-            } catch (error) {
-                if (resultDiv) {
-                    resultDiv.textContent = `❌ Netværksfejl: ${error.message}`;
-                    resultDiv.className = 'result-message error';
-                }
-            }
-        });
-    }
-}
-
-// Initialize
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    initPage();
+    initAdmin();
 });

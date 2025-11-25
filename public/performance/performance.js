@@ -1,4 +1,4 @@
-// Performance page logic
+// Performance Page - Host View with TABLE rendering
 
 const API_BASE = window.location.origin;
 
@@ -37,88 +37,19 @@ async function checkAuth() {
 }
 
 /**
- * Initialize page based on role
+ * Load performance data
  */
-async function initPage() {
+async function loadPerformanceData() {
     const user = await checkAuth();
     if (!user) return;
     
-    console.log('User authenticated:', user);
+    let hostId = user.hostId;
     
+    // If admin, get selected store
     if (user.role === 'admin') {
-        setupAdminView();
-    } else if (user.role === 'host') {
-        setupHostView(user.hostId);
-    }
-}
-
-/**
- * Setup Admin view
- */
-function setupAdminView() {
-    console.log('👨‍💼 Admin view');
-    
-    document.getElementById('pageTitle').textContent = 'Performance - Admin';
-    document.getElementById('pageSubtitle').textContent = 'Se alle butikkers performance data';
-    
-    // Show store selector
-    const adminStoreSelect = document.getElementById('adminStoreSelect');
-    if (adminStoreSelect) {
-        adminStoreSelect.style.display = 'flex';
-    }
-    
-    // Show SMS form
-    const adminSmsForm = document.getElementById('adminSmsForm');
-    if (adminSmsForm) {
-        adminSmsForm.style.display = 'block';
-    }
-    
-    // Load performance data for first store
-    loadPerformanceData();
-}
-
-/**
- * Setup Host view
- */
-async function setupHostView(hostId) {
-    console.log(`⭐ Host view for ID: ${hostId}`);
-    
-    try {
-        const response = await fetch(`${API_BASE}/api/public/host/${hostId}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            const hostName = data.host.name;
-            document.getElementById('pageTitle').textContent = `Performance - ${hostName}`;
-            document.getElementById('pageSubtitle').textContent = 'Dine kundetilfredsheds-data';
-        }
-    } catch (error) {
-        console.error('Error fetching host data:', error);
-    }
-    
-    // Show rank card for hosts
-    const rankCard = document.getElementById('rankCard');
-    if (rankCard) {
-        rankCard.style.display = 'block';
-    }
-    
-    // Load performance data
-    loadPerformanceData(hostId);
-}
-
-/**
- * Load performance data
- */
-async function loadPerformanceData(specificHostId = null) {
-    let hostId = specificHostId;
-    
-    if (!hostId) {
         const storeSelect = document.getElementById('storeSelect');
         if (storeSelect) {
             hostId = storeSelect.value;
-        } else {
-            const user = await checkAuth();
-            hostId = user ? user.hostId : null;
         }
     }
     
@@ -128,36 +59,11 @@ async function loadPerformanceData(specificHostId = null) {
     }
     
     try {
-        // Fetch host data with badge info
-        const hostResponse = await fetch(`${API_BASE}/api/public/host/${hostId}`);
-        const hostData = await hostResponse.json();
+        const response = await fetch(`${API_BASE}/api/public/host/${hostId}`);
+        const data = await response.json();
         
-        if (hostData.success) {
-            const host = hostData.host;
-            
-            // Update stats
-            const avgRatingEl = document.getElementById('avgRating');
-            if (avgRatingEl) {
-                avgRatingEl.textContent = host.avg_rating_90d ? host.avg_rating_90d.toFixed(1) : '-';
-            }
-            
-            const reviewCountEl = document.getElementById('reviewCount');
-            if (reviewCountEl) {
-                reviewCountEl.textContent = host.reviews_count_90d || '0';
-            }
-            
-            // Badge status
-            const badgeStatusEl = document.getElementById('badgeStatus');
-            if (badgeStatusEl) {
-                if (host.has_valuable_host_badge) {
-                    badgeStatusEl.innerHTML = '<span class="badge-yes">⭐ Valuable Host</span>';
-                } else {
-                    badgeStatusEl.innerHTML = '<span class="badge-no">Ikke optjent endnu</span>';
-                }
-            }
-            
-            // Load reviews
-            loadReviews(hostId);
+        if (data.success && data.host) {
+            displayPerformanceData(data.host);
         }
     } catch (error) {
         console.error('Error loading performance data:', error);
@@ -165,44 +71,181 @@ async function loadPerformanceData(specificHostId = null) {
 }
 
 /**
- * Load reviews
+ * Display performance data
+ */
+function displayPerformanceData(host) {
+    // Update stats
+    const avgRatingEl = document.getElementById('avgRating');
+    const reviewCountEl = document.getElementById('reviewCount');
+    const badgeStatusEl = document.getElementById('badgeStatus');
+    
+    if (avgRatingEl) {
+        const rating = parseFloat(host.avg_rating_90d);
+        avgRatingEl.textContent = (!isNaN(rating) && rating > 0) ? rating.toFixed(1) : '-';
+    }
+    
+    if (reviewCountEl) {
+        reviewCountEl.textContent = host.reviews_count_90d || '0';
+    }
+    
+    if (badgeStatusEl) {
+        if (host.has_valuable_host_badge) {
+            badgeStatusEl.textContent = 'Valuable Host ⭐';
+            badgeStatusEl.style.color = '#4CAF50';
+        } else {
+            badgeStatusEl.textContent = 'Ikke optjent endnu';
+            badgeStatusEl.style.color = '#757575';
+        }
+    }
+    
+    // Update page title
+    const pageTitleEl = document.getElementById('pageTitle');
+    if (pageTitleEl && host.name) {
+        pageTitleEl.textContent = `Performance - ${host.name}`;
+    }
+    
+    // Load reviews
+    loadReviews(host.id);
+}
+
+/**
+ * Load reviews with TABLE rendering
  */
 async function loadReviews(hostId) {
     try {
-        const response = await fetch(`${API_BASE}/api/public/host/${hostId}/reviews?limit=10`);
+        const response = await fetch(`${API_BASE}/api/admin/hosts/${hostId}/evaluations?limit=50`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to load reviews');
+            showReviewsError('Kunne ikke indlæse evalueringer');
+            return;
+        }
+        
         const data = await response.json();
         
-        if (data.success) {
-            displayReviews(data.reviews);
+        if (data.success && data.evaluations) {
+            displayReviews(data.evaluations);
+        } else {
+            showReviewsError('Ingen evalueringer tilgængelige');
         }
     } catch (error) {
         console.error('Error loading reviews:', error);
+        showReviewsError('Fejl ved indlæsning');
     }
 }
 
 /**
- * Display reviews
+ * Display reviews as TABLE
  */
 function displayReviews(reviews) {
-    const reviewsList = document.getElementById('reviewsList');
-    if (!reviewsList) return;
+    const tableBody = document.getElementById('reviewsTableBody');
     
-    if (reviews.length === 0) {
-        reviewsList.innerHTML = '<p>Ingen anmeldelser endnu</p>';
+    if (!tableBody) {
+        console.error('Reviews table body not found');
         return;
     }
     
-    reviewsList.innerHTML = reviews.map(review => `
-        <div class="review-item">
-            <div class="review-rating">${'★'.repeat(review.rating)}</div>
-            <div class="review-comment">${review.comment_text || 'Ingen kommentar'}</div>
-            <div class="review-date">${new Date(review.created_at).toLocaleDateString('da-DK')}</div>
-        </div>
-    `).join('');
+    if (!reviews || reviews.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Ingen evalueringer endnu</td></tr>';
+        return;
+    }
+    
+    tableBody.innerHTML = reviews.map(review => {
+        const date = new Date(review.created_at);
+        const dateStr = date.toLocaleDateString('da-DK', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        const rating = parseInt(review.rating);
+        const stars = '★'.repeat(Math.max(0, Math.min(5, rating)));
+        
+        const comment = review.comment_text || '-';
+        
+        return `
+            <tr>
+                <td>${dateStr}</td>
+                <td>
+                    <span class="rating-stars">${stars}</span>
+                    <span class="rating-number">${rating}/5</span>
+                </td>
+                <td>${comment}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    console.log(`Loaded ${reviews.length} reviews`);
 }
 
 /**
- * Logout function
+ * Show reviews error
+ */
+function showReviewsError(message) {
+    const tableBody = document.getElementById('reviewsTableBody');
+    if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #D32F2F;">${message}</td></tr>`;
+    }
+}
+
+/**
+ * Send SMS (admin only)
+ */
+async function sendSMS(event) {
+    event.preventDefault();
+    
+    const user = await checkAuth();
+    if (!user || user.role !== 'admin') return;
+    
+    const storeSelect = document.getElementById('storeSelect');
+    const phoneInput = document.getElementById('smsPhone');
+    const resultDiv = document.getElementById('smsResult');
+    
+    if (!storeSelect || !phoneInput) return;
+    
+    const hostId = storeSelect.value;
+    const phone = phoneInput.value;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/evaluations/send`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                hostId: parseInt(hostId),
+                phoneNumbers: [phone]
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (resultDiv) {
+            if (data.success) {
+                resultDiv.textContent = `SMS sendt!`;
+                resultDiv.style.color = '#4CAF50';
+                phoneInput.value = '';
+            } else {
+                resultDiv.textContent = `Fejl: ${data.error}`;
+                resultDiv.style.color = '#D32F2F';
+            }
+            resultDiv.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error sending SMS:', error);
+        if (resultDiv) {
+            resultDiv.textContent = 'Fejl ved afsendelse';
+            resultDiv.style.color = '#D32F2F';
+            resultDiv.style.display = 'block';
+        }
+    }
+}
+
+/**
+ * Logout
  */
 async function logout() {
     try {
@@ -216,7 +259,31 @@ async function logout() {
     window.location.href = '/login';
 }
 
+/**
+ * Initialize page
+ */
+async function initPerformance() {
+    console.log('Loading performance page...');
+    
+    const user = await checkAuth();
+    if (!user) return;
+    
+    console.log('User authenticated:', user);
+    
+    // Show admin controls if admin
+    if (user.role === 'admin') {
+        const adminStoreSelect = document.getElementById('adminStoreSelect');
+        const adminSmsForm = document.getElementById('adminSmsForm');
+        
+        if (adminStoreSelect) adminStoreSelect.style.display = 'flex';
+        if (adminSmsForm) adminSmsForm.style.display = 'block';
+    }
+    
+    // Load data
+    loadPerformanceData();
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    initPage();
+    initPerformance();
 });

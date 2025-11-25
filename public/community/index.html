@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valuable Host Community - Understory</title>
+    <title>Community Leaderboard - Understory</title>
     <link rel="stylesheet" href="/community/community.css">
 </head>
 <body>
@@ -12,88 +12,76 @@
         <div class="container">
             <div class="logo">UNDERSTORY</div>
             <nav class="nav">
-                <a href="/dashboard" class="nav-link" id="backLink">Tilbage</a>
-                <button class="btn-logout" onclick="logout()">Log ud</button>
+                <a href="/login" class="nav-link" id="loginBtn" style="display: none;">Log ind</a>
+                <a href="/dashboard" class="nav-link" id="dashboardBtn" style="display: none;">Dashboard</a>
+                <button class="btn-logout" id="logoutBtn" onclick="logout()" style="display: none;">Log ud</button>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="main">
+    <!-- Hero Section -->
+    <section class="hero">
         <div class="container">
-            
-            <!-- Page Header -->
-            <div class="page-header">
-                <h1>Valuable Host Community</h1>
-                <p>Vores bedste oplevelsesværter certificeret af kundens vurderinger</p>
-            </div>
+            <h1 class="hero-title">Top 40 Valuable Hosts</h1>
+            <p class="hero-subtitle">De bedste værter på Understory</p>
+        </div>
+    </section>
 
-            <!-- Stats Grid -->
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-value" id="totalHosts">-</div>
-                    <div class="stat-label">Værter i alt</div>
+                    <div class="stat-number" id="totalHosts">-</div>
+                    <div class="stat-label">Totale Værter</div>
                 </div>
-                <div class="stat-card highlight">
-                    <div class="stat-value" id="valuableHosts">-</div>
+                <div class="stat-card">
+                    <div class="stat-number" id="valuableHosts">-</div>
                     <div class="stat-label">Valuable Hosts</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="totalReviews">-</div>
-                    <div class="stat-label">Evalueringer (90 dage)</div>
+                    <div class="stat-number" id="totalReviews">-</div>
+                    <div class="stat-label">Evalueringer</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="avgRating">-</div>
-                    <div class="stat-label">Gennemsnitlig rating</div>
+                    <div class="stat-number" id="avgRating">-</div>
+                    <div class="stat-label">Gns. Rating</div>
                 </div>
             </div>
-
-            <!-- Leaderboard Section -->
-            <div class="leaderboard-section">
-                <h2>Top 40 Valuable Hosts</h2>
-                <p class="section-subtitle">Baseret på gennemsnitlig kundevurdering og antal anmeldelser de seneste 90 dage</p>
-                
-                <div class="leaderboard-table" id="leaderboardTable">
-                    <div class="loading">Indlæser...</div>
-                </div>
-            </div>
-
-            <!-- Testimonials Section -->
-            <div class="testimonials-section">
-                <h2>Historier fra vores værter</h2>
-                
-                <div class="testimonials-grid">
-                    <div class="testimonial-card">
-                        <p class="testimonial-text">"The feature in Understory's strict really well done. Super nice, swift easy to get an open new document on their website. Great. Thanks, find a bookings traveled there, and it's never even fit at a great experience!"</p>
-                        <div class="testimonial-author">
-                            <strong>Valuable Host</strong>
-                            <span>Hans H.</span>
-                        </div>
-                        <div class="testimonial-badge">Trustpilot</div>
-                    </div>
-
-                    <div class="testimonial-card">
-                        <p class="testimonial-text">"User-friendly and beautifully designed. Very easy and quick to get tanger tickets. These ticket platforms can be so complicated and annoying. Thanks, find a fix!"</p>
-                        <div class="testimonial-author">
-                            <strong>Wonderful Local</strong>
-                            <span>Tine W.</span>
-                        </div>
-                        <div class="testimonial-badge">Trustpilot</div>
-                    </div>
-
-                    <div class="testimonial-card">
-                        <p class="testimonial-text">"It's easy to to spend time creating amazing weekday experiences for guests from sailing and travelling. The design and the whole experience is smooth. I'm looking the collaboration so far. I'm looking our new development phase!"</p>
-                        <div class="testimonial-author">
-                            <strong>CanClimb</strong>
-                            <span>Jacob S. - KrakkerExperience.dk</span>
-                        </div>
-                        <div class="testimonial-badge">Trustpilot</div>
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </main>
+    </section>
+
+    <!-- Leaderboard Section with TABLE -->
+    <section class="leaderboard-section">
+        <div class="container">
+            <h2>Rangliste</h2>
+            <div class="table-wrapper">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Virksomhed</th>
+                            <th>Rating</th>
+                            <th>Anmeldelser</th>
+                            <th>Badge</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Indlæser...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Understory. Valuable Host Badge System.</p>
+        </div>
+    </footer>
 
     <script src="/community/community.js"></script>
 </body>

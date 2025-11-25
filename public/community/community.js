@@ -1,4 +1,4 @@
-// Community Page - Public Leaderboard (NO EMOJIS)
+// Community Page - Public Leaderboard with TABLE rendering
 
 const API_BASE = window.location.origin;
 
@@ -75,41 +75,35 @@ async function loadLeaderboard() {
 }
 
 /**
- * Display leaderboard with SAFE parsing
+ * Display leaderboard as TABLE
  */
 function displayLeaderboard(hosts) {
-    const leaderboard = document.getElementById('leaderboard');
+    const tableBody = document.getElementById('leaderboardTableBody');
     
-    if (!leaderboard) {
-        console.error('Leaderboard element not found');
+    if (!tableBody) {
+        console.error('Leaderboard table body element not found');
         return;
     }
     
     if (!hosts || hosts.length === 0) {
-        leaderboard.innerHTML = '<div class="loading">Ingen værter at vise endnu</div>';
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Ingen værter at vise endnu</td></tr>';
         return;
     }
     
-    leaderboard.innerHTML = hosts.map((host, index) => {
+    tableBody.innerHTML = hosts.map((host, index) => {
         const rank = index + 1;
-        const rankClass = rank <= 3 ? `rank-${rank}` : '';
         
-        // SAFE parsing of rating - FIX for toFixed error
+        // Safe parsing of rating
         let ratingValue = '0.00';
-        let ratingStars = 0;
-        
         if (host.avg_rating_90d !== null && host.avg_rating_90d !== undefined) {
             const rating = parseFloat(host.avg_rating_90d);
             if (!isNaN(rating) && rating > 0) {
                 ratingValue = rating.toFixed(2);
-                ratingStars = Math.round(rating);
             }
         }
         
-        const stars = '★'.repeat(Math.max(0, Math.min(5, ratingStars)));
-        
-        // Badge indicator (only star emoji kept)
-        const badgeIcon = host.has_valuable_host_badge ? '⭐ ' : '';
+        // Badge indicator (only star emoji)
+        const badgeIcon = host.has_valuable_host_badge ? '⭐' : '-';
         
         // Host name
         const hostName = host.name || host.host_name || 'Unknown Host';
@@ -117,35 +111,20 @@ function displayLeaderboard(hosts) {
         // Review count
         const reviewCount = host.reviews_count_90d || 0;
         
+        // Rank styling for top 3
+        let rankClass = '';
+        if (rank === 1) rankClass = 'rank-gold';
+        else if (rank === 2) rankClass = 'rank-silver';
+        else if (rank === 3) rankClass = 'rank-bronze';
+        
         return `
-            <div class="leaderboard-item">
-                <div class="rank ${rankClass}">${rank}</div>
-                
-                <div class="host-info">
-                    <div class="host-name">
-                        ${badgeIcon}${hostName}
-                    </div>
-                    <div class="host-stats">
-                        Host ID: ${host.host_id}
-                    </div>
-                </div>
-                
-                <div class="rating-display">
-                    <div class="rating-number">${ratingValue}</div>
-                    <div class="rating-stars">${stars}</div>
-                </div>
-                
-                <div class="reviews-count">
-                    <div class="reviews-number">${reviewCount}</div>
-                    <div class="reviews-label">anmeldelser</div>
-                </div>
-                
-                <div class="badge-status">
-                    ${host.has_valuable_host_badge 
-                        ? '<span class="badge-yes">Valuable Host</span>' 
-                        : '<span class="badge-no">-</span>'}
-                </div>
-            </div>
+            <tr class="${rankClass}">
+                <td><strong>${rank}</strong></td>
+                <td>${hostName}</td>
+                <td>${ratingValue}</td>
+                <td>${reviewCount}</td>
+                <td style="text-align: center; font-size: 20px;">${badgeIcon}</td>
+            </tr>
         `;
     }).join('');
     
@@ -156,9 +135,9 @@ function displayLeaderboard(hosts) {
  * Show leaderboard error
  */
 function showLeaderboardError(message) {
-    const leaderboard = document.getElementById('leaderboard');
-    if (leaderboard) {
-        leaderboard.innerHTML = `<div class="loading" style="color: #D32F2F;">${message}</div>`;
+    const tableBody = document.getElementById('leaderboardTableBody');
+    if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #D32F2F;">${message}</td></tr>`;
     }
 }
 
@@ -186,15 +165,18 @@ async function initPage() {
     // Check if user is logged in (optional)
     const user = await checkAuth();
     
-    // Show/hide login button based on auth
+    // Show/hide navigation buttons based on auth
     const loginBtn = document.getElementById('loginBtn');
+    const dashboardBtn = document.getElementById('dashboardBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     
     if (user) {
         if (loginBtn) loginBtn.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'block';
+        if (dashboardBtn) dashboardBtn.style.display = 'inline-block';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
     } else {
-        if (loginBtn) loginBtn.style.display = 'block';
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (dashboardBtn) dashboardBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'none';
     }
     

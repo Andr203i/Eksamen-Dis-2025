@@ -62,30 +62,37 @@
             <!-- SMS Send Section -->
             <div class="sms-section">
                 <h2>Send SMS Evaluering</h2>
-                <form id="smsForm" class="sms-form">
+                <form class="admin-form">
                     <div class="form-group">
-                        <label for="customerPhone">Kundens Telefonnummer</label>
-                        <input type="tel" id="customerPhone" placeholder="+4512345678" required>
+                        <label for="smsPhone">Kundens Telefonnummer</label>
+                        <input type="tel" id="smsPhone" placeholder="+4512345678" required>
                         <small>Format: +45XXXXXXXX</small>
                     </div>
                     <button type="submit" class="btn btn-primary">Send SMS</button>
                 </form>
-                <div id="smsStatus" class="sms-status"></div>
+                <div id="smsResult" class="result-message" style="display: none;"></div>
             </div>
 
-            <!-- Leaderboard Section -->
+            <!-- Top 40 Leaderboard TABLE -->
             <div class="leaderboard-section">
                 <h2>Top 40 Leaderboard</h2>
-                <div class="leaderboard-table" id="leaderboardTable">
-                    <div class="loading">Indlæser...</div>
-                </div>
-            </div>
-
-            <!-- Recent Evaluations -->
-            <div class="evaluations-section">
-                <h2>Seneste Evaluations</h2>
-                <div class="evaluations-table" id="evaluationsTable">
-                    <div class="loading">Indlæser...</div>
+                <div class="table-wrapper">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Virksomhed</th>
+                                <th>Rating</th>
+                                <th>Anmeldelser</th>
+                                <th>Badge</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Indlæser...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
